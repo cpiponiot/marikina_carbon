@@ -1,0 +1,25 @@
+project:
+  type: book
+  output-dir: docs
+
+book:
+  title: "Changes in forest cover and carbon density in the Upper Marikina RBPL"
+  date: last-modified
+  chapters:
+    - index.qmd
+    - part: 10_forest_cover.qmd
+      chapters:
+        - 11_tmf.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+    code-fold: true
+    number-depth: -1
+
+editor: visual
+
+# execute:
+#   cache: true

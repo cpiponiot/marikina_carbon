@@ -1,0 +1,35 @@
+[
+  {
+    "objectID": "11_tmf.html",
+    "href": "11_tmf.html",
+    "title": "Tropical Moist Forests product",
+    "section": "",
+    "text": "Maps\nThis product, developed by the European Commission’s Joint Research Centre, classifies forest areas and detects annual changes, including deforestation and forest degradation. Based on Landsat images, it provides data from 1990 to 2024 at a resolution of 30 metres.\nCode\nplot(c(\n  tmf[[which(grepl(2010, names(tmf)))]], \n  tmf[[which(grepl(2024, names(tmf)))]]\n), col = c(\"darkgreen\", \"orange\", \"red\", \"green\", \"lightblue\", \"grey\"))",
+    "crumbs": [
+      "Forest cover",
+      "Tropical Moist Forests product"
+    ]
+  },
+  {
+    "objectID": "11_tmf.html#graphs",
+    "href": "11_tmf.html#graphs",
+    "title": "Tropical Moist Forests product",
+    "section": "Graphs",
+    "text": "Graphs\n\n\nCode\nggplot(data, aes(x=year)) + \n  geom_line(aes(y = Degraded, color = \"Degraded\"), size = 0.9) + \n  geom_line(aes(y = Deforested, color=\"Deforested\"), size = 0.9)+\n  geom_line(aes(y = Regrowth, color=\"Regrowth\"), size = 0.9)+\n  scale_color_manual(name = \"\", values = c(\n    \"Degraded\" = \"orange\", \n    \"Deforested\" = \"red\", \n    \"Regrowth\" = \"green\"\n  )) +\n  labs(title = \"TMF changes from 1990 to 2024\", x = \"Year\",  y = \"Surface (Ha)\")",
+    "crumbs": [
+      "Forest cover",
+      "Tropical Moist Forests product"
+    ]
+  },
+  {
+    "objectID": "11_tmf.html#changes-in-forest-area-between-1990-and-2024",
+    "href": "11_tmf.html#changes-in-forest-area-between-1990-and-2024",
+    "title": "Tropical Moist Forests product",
+    "section": "Changes in forest area between 1990 and 2024",
+    "text": "Changes in forest area between 1990 and 2024\n\n\nCode\nggplot(data, aes(x=year)) + \n  geom_line(aes(y = Degraded, color = \"Degraded\"), size = 0.9) + \n  geom_line(aes(y = Deforested, color=\"Deforested\"), size = 0.9)+\n  geom_line(aes(y = Regrowth, color=\"Regrowth\"), size = 0.9)+\n  scale_color_manual(name = \"\", values = c(\n    \"Degraded\" = \"orange\", \n    \"Deforested\" = \"red\", \n    \"Regrowth\" = \"green\"\n  )) +\n  labs(title = \"TMF changes from 1990 to 2024\", x = \"Year\",  y = \"Surface (Ha)\")",
+    "crumbs": [
+      "Forest cover",
+      "Tropical Moist Forests product"
+    ]
+  }
+]
