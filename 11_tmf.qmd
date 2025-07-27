@@ -35,7 +35,7 @@ for (yr in 1990:2024) {
 ```{r}
 #| message: false
 #| warning: false
-tmf_files <- list.files(dir_tmf, pattern = ".tif$", full.names = TRUE)
+tmf_files <- list.files(dir_tmf, pattern = "AnnualChange", full.names = TRUE)
 years <- gregexpr("[0-9]+", tmf_files) |>
   regmatches(x = tmf_files) |>
   lapply(as.numeric) |>

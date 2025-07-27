@@ -31,5 +31,27 @@
       "Forest cover",
       "Tropical Moist Forests product"
     ]
+  },
+  {
+    "objectID": "21_tree_height.html",
+    "href": "21_tree_height.html",
+    "title": "Tree height",
+    "section": "",
+    "text": "Data\nThis dataset was downloaded from Lang, N., Rodríguez, A. C., Schindler, K., & Wegner, J. D. (2021). Canopy top height and indicative high carbon stock maps for Indonesia, Malaysia, and Philippines (Version 1.0) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.5012448\nTree height was estimated by combining Sentinel-2 optical satellite images and GEDI lidar data, using a deep convolutional neural network.\nCode\ndir_height &lt;- \"data/tree_height\"\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n    read_sf() |&gt;\n    st_transform(crs = \"EPSG:4326\")\nif(!dir.exists(dir_height)) dir.create(dir_height)\nif (!file.exists(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))) {\n  zen4R::download_zenodo(\"10.5281/zenodo.5012447\", dir_height, \n      \"canopy_top_height_2020_philippines.tif\")\n  paste0(dir_height, \"/canopy_top_height_2020_philippines.tif\") |&gt;\n    rast() |&gt; crop(area) |&gt; mask(area) |&gt; \n    writeRaster(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))\n}\nheight &lt;- rast(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))",
+    "crumbs": [
+      "Carbon density",
+      "Tree height"
+    ]
+  },
+  {
+    "objectID": "21_tree_height.html#comparison-with-tmf",
+    "href": "21_tree_height.html#comparison-with-tmf",
+    "title": "Tree height",
+    "section": "Comparison with TMF",
+    "text": "Comparison with TMF\n\n\nCode\ntmf &lt;- rast(\"data/tmf/JRC_TMF_AnnualChange_v1_2020_ASI_ID76_N20_E120.tif\") |&gt;\n  crop(area) |&gt; mask(area) |&gt; \n  resample(height, method = \"near\")\ntypes &lt;- c(\"Undisturbed\", \"Degraded\", \"Deforested\",\"Regrowth\", \"Water\", \"Other\")\nheight_type &lt;- lapply(1:6, function(i) {\n  x &lt;- ifel(tmf == i, 1, NA) |&gt; mask(x = height)\n  return(data.frame(type = types[i], value = x[!is.na(x)]))\n}) |&gt; do.call(what = rbind)\n\n\n\n\nCode\nggplot(height_type) + \n  geom_boxplot(aes(x = type, y = canopy_top_height_2020_philippines))+\n  labs(x = NULL, y = \"Canopy height (m)\")",
+    "crumbs": [
+      "Carbon density",
+      "Tree height"
+    ]
   }
 ]

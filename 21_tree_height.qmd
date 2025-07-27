@@ -1,0 +1,61 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(sf)
+library(terra)
+library(ggplot2)
+```
+
+# Tree height {.unnumbered}
+
+## Data 
+
+This dataset was downloaded from Lang, N., Rodríguez, A. C., Schindler, K., & Wegner, J. D. (2021). Canopy top height and indicative high carbon stock maps for Indonesia, Malaysia, and Philippines (Version 1.0) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.5012448
+
+Tree height was estimated by combining Sentinel-2 optical satellite images and GEDI lidar data, using a deep convolutional neural network.
+
+```{r}
+dir_height <- "data/tree_height"
+area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+  read_sf() |>
+  st_transform(crs = "EPSG:4326")
+if (!dir.exists(dir_height)) dir.create(dir_height)
+if (!file.exists(paste0(dir_height, "/canopy_top_height_2020_umrbpl.tif"))) {
+  zen4R::download_zenodo(
+    "10.5281/zenodo.5012447", dir_height,
+    "canopy_top_height_2020_philippines.tif"
+  )
+  paste0(dir_height, "/canopy_top_height_2020_philippines.tif") |>
+    rast() |>
+    crop(area) |>
+    mask(area) |>
+    writeRaster(paste0(dir_height, "/canopy_top_height_2020_umrbpl.tif"))
+}
+height <- rast(paste0(dir_height, "/canopy_top_height_2020_umrbpl.tif"))
+```
+
+
+## Comparison with TMF
+
+```{r}
+tmf <- rast("data/tmf/JRC_TMF_AnnualChange_v1_2020_ASI_ID76_N20_E120.tif") |>
+  crop(area) |>
+  mask(area) |>
+  resample(height, method = "near")
+types <- c(
+  "Undisturbed", "Degraded", "Deforested",
+  "Regrowth", "Water", "Other"
+)
+height_type <- lapply(1:6, function(i) {
+  x <- ifel(tmf == i, 1, NA) |> mask(x = height)
+  data.frame(type = types[i], value = x[!is.na(x)])
+}) |>
+  do.call(what = rbind)
+```
+
+```{r}
+ggplot(height_type) +
+  geom_boxplot(aes(x = type, y = canopy_top_height_2020_philippines)) +
+  labs(x = NULL, y = "Canopy height (m)")
+```
+
