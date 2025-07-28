@@ -1,4 +1,4 @@
-<!-- [![](https://www.repostatus.org/badges/latest/wip.svg)](#0) [![lint](https://github.com/cpiponiot/marikina_carbon/workflows/lint/badge.svg)](https://github.com/cpiponiot/marikina_carbon/actions?query=workflow%3Alint) -->
+[![](https://www.repostatus.org/badges/latest/wip.svg)](#0) [![lint](https://github.com/cpiponiot/marikina_carbon/workflows/lint/badge.svg)](https://github.com/cpiponiot/marikina_carbon/actions?query=workflow%3Alint)
 
 # Introduction {.unnumbered}
 

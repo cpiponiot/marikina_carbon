@@ -8,7 +8,7 @@ format:
     toc-depth: 1
 ---
 
-<!-- [![](https://www.repostatus.org/badges/latest/wip.svg)](#0) [![lint](https://github.com/cpiponiot/marikina_carbon/workflows/lint/badge.svg)](https://github.com/cpiponiot/marikina_carbon/actions?query=workflow%3Alint) -->
+[![](https://www.repostatus.org/badges/latest/wip.svg)](#0) [![lint](https://github.com/cpiponiot/marikina_carbon/workflows/lint/badge.svg)](https://github.com/cpiponiot/marikina_carbon/actions?query=workflow%3Alint)
 
 **marikina_carbon** explores the changes in forest cover and forest carbon density in the Upper Marikina River Basin Protected Landscape.
 
