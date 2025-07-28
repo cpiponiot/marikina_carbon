@@ -37,7 +37,7 @@
     "href": "21_tree_height.html",
     "title": "Tree height",
     "section": "",
-    "text": "Data\nThis dataset was downloaded from Lang, N., Rodríguez, A. C., Schindler, K., & Wegner, J. D. (2021). Canopy top height and indicative high carbon stock maps for Indonesia, Malaysia, and Philippines (Version 1.0) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.5012448\nTree height was estimated by combining Sentinel-2 optical satellite images and GEDI lidar data, using a deep convolutional neural network.\nCode\ndir_height &lt;- \"data/tree_height\"\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n    read_sf() |&gt;\n    st_transform(crs = \"EPSG:4326\")\nif(!dir.exists(dir_height)) dir.create(dir_height)\nif (!file.exists(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))) {\n  zen4R::download_zenodo(\"10.5281/zenodo.5012447\", dir_height, \n      \"canopy_top_height_2020_philippines.tif\")\n  paste0(dir_height, \"/canopy_top_height_2020_philippines.tif\") |&gt;\n    rast() |&gt; crop(area) |&gt; mask(area) |&gt; \n    writeRaster(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))\n}\nheight &lt;- rast(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))",
+    "text": "Data\nThis dataset was downloaded from Lang, N., Rodríguez, A. C., Schindler, K., & Wegner, J. D. (2021). Canopy top height and indicative high carbon stock maps for Indonesia, Malaysia, and Philippines (Version 1.0) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.5012448\nTree height was estimated by combining Sentinel-2 optical satellite images and GEDI lidar data, using a deep convolutional neural network.\nCode\ndir_height &lt;- \"data/tree_height\"\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\nif (!dir.exists(dir_height)) dir.create(dir_height)\nif (!file.exists(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))) {\n  zen4R::download_zenodo(\n    \"10.5281/zenodo.5012447\", dir_height,\n    \"canopy_top_height_2020_philippines.tif\"\n  )\n  paste0(dir_height, \"/canopy_top_height_2020_philippines.tif\") |&gt;\n    rast() |&gt;\n    crop(area) |&gt;\n    mask(area) |&gt;\n    writeRaster(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))\n}\nCode\ntmf &lt;- list.files(\"data/tmf\", \"AnnualChange\", full.names = TRUE)[1:31] |&gt;\n  rast() |&gt;\n  crop(area) |&gt;\n  mask(area)\nheight &lt;- rast(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\")) |&gt; \n  resample(tmf, method = \"average\")\n# age of secondary forests in 2020\ntmf_sec_age &lt;- mask(x = tmf, ifel(tmf[[31]] == 4, 1, NA)) |&gt;\n  app(\\(x) if(any(!is.na(x) & x != 4)) {length(x) - max(which(x !=4))} else NA)\n# previous land use\ntmf_sec_prev &lt;- mask(x = tmf, ifel(tmf[[31]] == 4, 1, NA)) |&gt;\n  app(\\(x) if(any(!is.na(x) & x != 4)) {x[max(which(x !=4))]} else NA)\n# create complete dataframe\ndf_height &lt;- c(tmf[[31]], height, tmf_sec_age, tmf_sec_prev) |&gt; \n  as.data.frame() |&gt; \n  subset(!is.na(Dec2020))\ncolnames(df_height) &lt;- c(\"class\", \"height\", \"sec_age\", \"sec_prev\")\ndf_height$class &lt;- factor(df_height$class)\nlevels(df_height$class) = c(\"Undisturbed\", \"Degraded\", \"Deforested\",\n                            \"Regrowth\", \"Water\", \"Other\")",
     "crumbs": [
       "Carbon density",
       "Tree height"
@@ -52,6 +52,78 @@
     "crumbs": [
       "Carbon density",
       "Tree height"
+    ]
+  },
+  {
+    "objectID": "21_tree_height.html#distribution-of-canopy-height-by-tmf-class",
+    "href": "21_tree_height.html#distribution-of-canopy-height-by-tmf-class",
+    "title": "Tree height",
+    "section": "Distribution of canopy height by TMF class",
+    "text": "Distribution of canopy height by TMF class\n\n\nCode\ndf_height |&gt; \n  ggplot() +\n  geom_boxplot(aes(x = class, y = height)) +\n  labs(x = NULL, y = \"Canopy height (m)\")",
+    "crumbs": [
+      "Carbon density",
+      "Tree height"
+    ]
+  },
+  {
+    "objectID": "21_tree_height.html#canopy-height-changes-with-tmf-secondary-forest-age",
+    "href": "21_tree_height.html#canopy-height-changes-with-tmf-secondary-forest-age",
+    "title": "Tree height",
+    "section": "Canopy height changes with TMF secondary forest age",
+    "text": "Canopy height changes with TMF secondary forest age\n\n\nCode\ndf_height |&gt; \n  subset(!is.na(sec_age)) |&gt; \n  ggplot() +\n  geom_histogram(aes(x = sec_age)) +\n  labs(x = \"Secondary forest age in 2020 (yr)\")\n\n\n\n\n\n\n\n\n\n\n\nCode\ndf_height |&gt; \n  subset(!is.na(sec_age)) |&gt; \n  ggplot(aes(sec_age, height))+\n  geom_point()+\n  geom_smooth()",
+    "crumbs": [
+      "Carbon density",
+      "Tree height"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Changes in forest cover and carbon density in the Upper Marikina RBPL",
+    "section": "",
+    "text": "Introduction\nmarikina_carbon explores the changes in forest cover and forest carbon density in the Upper Marikina River Basin Protected Landscape.",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "index.html#usage",
+    "href": "index.html#usage",
+    "title": "Changes in forest cover and carbon density in the Upper Marikina RBPL",
+    "section": "Usage",
+    "text": "Usage\nAll marikina_carbon analyses rely on the quarto documents (files.qmd) that can be run with R and associated environment defined with renv.",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "index.html#project",
+    "href": "index.html#project",
+    "title": "Changes in forest cover and carbon density in the Upper Marikina RBPL",
+    "section": "Project",
+    "text": "Project\nmarikina_carbon includes:\n\nAnalyse of the data with associated documentation and figures:\n\nReproducible analyses in files.qmd\nResulting pages in docs/\nDocument structure definition in _quarto.yml\n\nData in data/\nR scripts with functions in r/\nR environment definition with renv in renv/ and renv/lock\nR files (.Rbuildignore , .Rdata , .Rprofile , .Rhistory, .lintr)\nGit and GitHub files (.gitignore , .github/)\nProject documentation (README.qmd , README.md , NEWS.md, LICENSE )",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "index.html#contribution",
+    "href": "index.html#contribution",
+    "title": "Changes in forest cover and carbon density in the Upper Marikina RBPL",
+    "section": "Contribution",
+    "text": "Contribution\nYou can contribute to the project by forking the repository on github and cloning the fork to your machine using several options, including GitHub desktop GUI.",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "index.html#help",
+    "href": "index.html#help",
+    "title": "Changes in forest cover and carbon density in the Upper Marikina RBPL",
+    "section": "Help",
+    "text": "Help\nPlease create an issue on GitHub for any questions, bugs or help needed regarding marikina_carbon: https://github.com/cpiponiot/marikina_carbon/issues.",
+    "crumbs": [
+      "Introduction"
     ]
   }
 ]

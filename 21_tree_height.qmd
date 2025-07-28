@@ -15,6 +15,8 @@ This dataset was downloaded from Lang, N., Rodríguez, A. C., Schindler, K., & W
 Tree height was estimated by combining Sentinel-2 optical satellite images and GEDI lidar data, using a deep convolutional neural network.
 
 ```{r}
+#| message: false
+#| warning: false
 dir_height <- "data/tree_height"
 area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
@@ -31,31 +33,79 @@ if (!file.exists(paste0(dir_height, "/canopy_top_height_2020_umrbpl.tif"))) {
     mask(area) |>
     writeRaster(paste0(dir_height, "/canopy_top_height_2020_umrbpl.tif"))
 }
-height <- rast(paste0(dir_height, "/canopy_top_height_2020_umrbpl.tif"))
 ```
 
 
-## Comparison with TMF
-
 ```{r}
-tmf <- rast("data/tmf/JRC_TMF_AnnualChange_v1_2020_ASI_ID76_N20_E120.tif") |>
+#| message: false
+#| warning: false
+tmf <- list.files("data/tmf", "AnnualChange", full.names = TRUE)[1:31] |>
+  rast() |>
   crop(area) |>
-  mask(area) |>
-  resample(height, method = "near")
-types <- c(
+  mask(area)
+height <- rast(paste0(dir_height, "/canopy_top_height_2020_umrbpl.tif")) |>
+  resample(tmf, method = "average")
+# age of secondary forests in 2020
+tmf_sec_age <- mask(x = tmf, ifel(tmf[[31]] == 4, 1, NA)) |>
+  app(\(x) {
+    if (any(!is.na(x) & x != 4)) {
+      length(x) - max(which(x != 4))
+    } else {
+      NA
+    }
+  })
+# previous land use
+tmf_sec_prev <- mask(x = tmf, ifel(tmf[[31]] == 4, 1, NA)) |>
+  app(\(x) {
+    if (any(!is.na(x) & x != 4)) {
+      x[max(which(x != 4))]
+    } else {
+      NA
+    }
+  })
+# create complete dataframe
+df_height <- c(tmf[[31]], height, tmf_sec_age, tmf_sec_prev) |>
+  as.data.frame() |>
+  subset(!is.na(Dec2020))
+colnames(df_height) <- c("class", "height", "sec_age", "sec_prev")
+df_height$class <- factor(df_height$class)
+levels(df_height$class) <- c(
   "Undisturbed", "Degraded", "Deforested",
   "Regrowth", "Water", "Other"
 )
-height_type <- lapply(1:6, function(i) {
-  x <- ifel(tmf == i, 1, NA) |> mask(x = height)
-  data.frame(type = types[i], value = x[!is.na(x)])
-}) |>
-  do.call(what = rbind)
+```
+
+## Distribution of canopy height by TMF class
+
+```{r}
+#| message: false
+#| warning: false
+df_height |>
+  ggplot() +
+  geom_boxplot(aes(x = class, y = height)) +
+  labs(x = NULL, y = "Canopy height (m)")
+```
+
+## Canopy height changes with TMF secondary forest age
+
+
+```{r}
+#| message: false
+#| warning: false
+df_height |>
+  subset(!is.na(sec_age)) |>
+  ggplot() +
+  geom_histogram(aes(x = sec_age)) +
+  labs(x = "Secondary forest age in 2020 (yr)")
 ```
 
 ```{r}
-ggplot(height_type) +
-  geom_boxplot(aes(x = type, y = canopy_top_height_2020_philippines)) +
-  labs(x = NULL, y = "Canopy height (m)")
+#| message: false
+#| warning: false
+df_height |>
+  subset(!is.na(sec_age)) |>
+  ggplot(aes(sec_age, height)) +
+  geom_point() +
+  geom_smooth()
 ```
 
