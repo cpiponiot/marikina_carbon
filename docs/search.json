@@ -37,7 +37,7 @@
     "href": "21_tree_height.html",
     "title": "Tree height",
     "section": "",
-    "text": "Data\nThis dataset was downloaded from Lang, N., Rodríguez, A. C., Schindler, K., & Wegner, J. D. (2021). Canopy top height and indicative high carbon stock maps for Indonesia, Malaysia, and Philippines (Version 1.0) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.5012448\nTree height was estimated by combining Sentinel-2 optical satellite images and GEDI lidar data, using a deep convolutional neural network.\nCode\ndir_height &lt;- \"data/tree_height\"\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\nif (!dir.exists(dir_height)) dir.create(dir_height)\nif (!file.exists(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))) {\n  zen4R::download_zenodo(\n    \"10.5281/zenodo.5012447\", dir_height,\n    \"canopy_top_height_2020_philippines.tif\"\n  )\n  paste0(dir_height, \"/canopy_top_height_2020_philippines.tif\") |&gt;\n    rast() |&gt;\n    crop(area) |&gt;\n    mask(area) |&gt;\n    writeRaster(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))\n}\nCode\ntmf &lt;- list.files(\"data/tmf\", \"AnnualChange\", full.names = TRUE)[1:31] |&gt;\n  rast() |&gt;\n  crop(area) |&gt;\n  mask(area)\nheight &lt;- rast(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\")) |&gt; \n  resample(tmf, method = \"average\")\n# age of secondary forests in 2020\ntmf_sec_age &lt;- mask(x = tmf, ifel(tmf[[31]] == 4, 1, NA)) |&gt;\n  app(\\(x) if(any(!is.na(x) & x != 4)) {length(x) - max(which(x !=4))} else NA)\n# previous land use\ntmf_sec_prev &lt;- mask(x = tmf, ifel(tmf[[31]] == 4, 1, NA)) |&gt;\n  app(\\(x) if(any(!is.na(x) & x != 4)) {x[max(which(x !=4))]} else NA)\n# create complete dataframe\ndf_height &lt;- c(tmf[[31]], height, tmf_sec_age, tmf_sec_prev) |&gt; \n  as.data.frame() |&gt; \n  subset(!is.na(Dec2020))\ncolnames(df_height) &lt;- c(\"class\", \"height\", \"sec_age\", \"sec_prev\")\ndf_height$class &lt;- factor(df_height$class)\nlevels(df_height$class) = c(\"Undisturbed\", \"Degraded\", \"Deforested\",\n                            \"Regrowth\", \"Water\", \"Other\")",
+    "text": "Data\nThis dataset was downloaded from Lang, N., Rodríguez, A. C., Schindler, K., & Wegner, J. D. (2021). Canopy top height and indicative high carbon stock maps for Indonesia, Malaysia, and Philippines (Version 1.0) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.5012448\nTree height was estimated by combining Sentinel-2 optical satellite images and GEDI lidar data, using a deep convolutional neural network.\nCode\ndir_height &lt;- \"data/tree_height\"\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\nif (!dir.exists(dir_height)) dir.create(dir_height)\nif (!file.exists(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))) {\n  zen4R::download_zenodo(\n    \"10.5281/zenodo.5012447\", dir_height,\n    \"canopy_top_height_2020_philippines.tif\"\n  )\n  paste0(dir_height, \"/canopy_top_height_2020_philippines.tif\") |&gt;\n    rast() |&gt;\n    crop(area) |&gt;\n    mask(area) |&gt;\n    writeRaster(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))\n}\nCode\ntmf &lt;- list.files(\"data/tmf\", \"AnnualChange\", full.names = TRUE)[1:31] |&gt;\n  rast() |&gt;\n  crop(area) |&gt;\n  mask(area)\nheight &lt;- rast(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\")) |&gt;\n  resample(tmf, method = \"average\")\n# age of secondary forests in 2020\ntmf_sec_age &lt;- mask(x = tmf, ifel(tmf[[31]] == 4, 1, NA)) |&gt;\n  app(\\(x) {\n    if (any(!is.na(x) & x != 4)) {\n      length(x) - max(which(x != 4))\n    } else {\n      NA\n    }\n  })\n# previous land use\ntmf_sec_prev &lt;- mask(x = tmf, ifel(tmf[[31]] == 4, 1, NA)) |&gt;\n  app(\\(x) {\n    if (any(!is.na(x) & x != 4)) {\n      x[max(which(x != 4))]\n    } else {\n      NA\n    }\n  })\n# create complete dataframe\ndf_height &lt;- c(tmf[[31]], height, tmf_sec_age, tmf_sec_prev) |&gt;\n  as.data.frame() |&gt;\n  subset(!is.na(Dec2020))\ncolnames(df_height) &lt;- c(\"class\", \"height\", \"sec_age\", \"sec_prev\")\ndf_height$class &lt;- factor(df_height$class)\nlevels(df_height$class) &lt;- c(\n  \"Undisturbed\", \"Degraded\", \"Deforested\",\n  \"Regrowth\", \"Water\", \"Other\"\n)",
     "crumbs": [
       "Carbon density",
       "Tree height"
@@ -59,7 +59,7 @@
     "href": "21_tree_height.html#distribution-of-canopy-height-by-tmf-class",
     "title": "Tree height",
     "section": "Distribution of canopy height by TMF class",
-    "text": "Distribution of canopy height by TMF class\n\n\nCode\ndf_height |&gt; \n  ggplot() +\n  geom_boxplot(aes(x = class, y = height)) +\n  labs(x = NULL, y = \"Canopy height (m)\")",
+    "text": "Distribution of canopy height by TMF class\n\n\nCode\ndf_height |&gt;\n  ggplot() +\n  geom_boxplot(aes(x = class, y = height)) +\n  labs(x = NULL, y = \"Canopy height (m)\")",
     "crumbs": [
       "Carbon density",
       "Tree height"
@@ -70,7 +70,7 @@
     "href": "21_tree_height.html#canopy-height-changes-with-tmf-secondary-forest-age",
     "title": "Tree height",
     "section": "Canopy height changes with TMF secondary forest age",
-    "text": "Canopy height changes with TMF secondary forest age\n\n\nCode\ndf_height |&gt; \n  subset(!is.na(sec_age)) |&gt; \n  ggplot() +\n  geom_histogram(aes(x = sec_age)) +\n  labs(x = \"Secondary forest age in 2020 (yr)\")\n\n\n\n\n\n\n\n\n\n\n\nCode\ndf_height |&gt; \n  subset(!is.na(sec_age)) |&gt; \n  ggplot(aes(sec_age, height))+\n  geom_point()+\n  geom_smooth()",
+    "text": "Canopy height changes with TMF secondary forest age\n\n\nCode\ndf_height |&gt;\n  subset(!is.na(sec_age)) |&gt;\n  ggplot() +\n  geom_histogram(aes(x = sec_age)) +\n  labs(x = \"Secondary forest age in 2020 (yr)\")\n\n\n\n\n\n\n\n\n\n\n\nCode\ndf_height |&gt;\n  subset(!is.na(sec_age)) |&gt;\n  ggplot(aes(sec_age, height)) +\n  geom_point() +\n  geom_smooth()",
     "crumbs": [
       "Carbon density",
       "Tree height"
@@ -124,6 +124,39 @@
     "text": "Help\nPlease create an issue on GitHub for any questions, bugs or help needed regarding marikina_carbon: https://github.com/cpiponiot/marikina_carbon/issues.",
     "crumbs": [
       "Introduction"
+    ]
+  },
+  {
+    "objectID": "12_lulc.html",
+    "href": "12_lulc.html",
+    "title": "Phlippines LULC data",
+    "section": "",
+    "text": "Temporal trends\nCode\ndf_lulc &lt;- as.data.frame(lulc, xy = TRUE)\nnames(df_lulc) &lt;- \n  c(\"lon\", \"lat\", \"LC1988\", \"LC2003\", \"AGG14\", \"AGG12\", \"CLASS_NAME\")\ndf_lulc |&gt; \n  setDT() |&gt; melt(id.vars = c(\"lon\", \"lat\")) |&gt; \n  ggplot(aes(lon, lat, fill=value)) +\n  geom_raster() + \n  scale_fill_manual(values = c(\"chartreuse4\", \"chartreuse2\", \"grey\", \"gold\")) +\n  facet_wrap(~variable) +\n  coord_equal() +\n  theme_classic() +\n  labs(x=NULL, y=NULL, fill=NULL) +\n  theme(legend.position = c(0.85, 0.2))\nCode\nfiles &lt;- list.files(\"data/LULC\", recursive = TRUE, \"shp\")\nyears &lt;- data.frame(\n  layer = seq_len(length(files)), \n  year = as.numeric(substr(files, 1, 4))\n)\nfreq(lulc) |&gt; \n  mutate(area = count*0.09) |&gt; \n  left_join(years) |&gt; \n  ggplot(aes(year, area, col=value)) +\n  geom_line() +\n  scale_color_manual(values = c(\"chartreuse4\", \"chartreuse2\", \"grey\", \"gold\")) +\n  theme_classic() +\n  labs(x=\"Year\", y=\"Area [ha]\", col=NULL)",
+    "crumbs": [
+      "Forest cover",
+      "Phlippines LULC data"
+    ]
+  },
+  {
+    "objectID": "12_lulc.html#comparison-with-tmf",
+    "href": "12_lulc.html#comparison-with-tmf",
+    "title": "Phlippines LULC data",
+    "section": "Comparison with TMF",
+    "text": "Comparison with TMF\n\n\nCode\nlevels(tmf2020) &lt;- data.frame(\n  value = 0:6, \n  category = c(NA, \"Undisturbed Forest\", \"Degraded Forest\", \"Deforested\", \n                \"Regrowing Forest\", \"Water\", \"Other\"))\n\nas.data.frame(c(tmf2020, lulc[[5]])) |&gt;\n  select(LC, category) |&gt; table() |&gt; kable()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nUndisturbed Forest\nDegraded Forest\nDeforested\nRegrowing Forest\nWater\nOther\n\n\n\n\nClosed Forest\n25515\n253\n4\n23\n0\n3\n\n\nOpen Forest\n39846\n5957\n873\n2188\n0\n829\n\n\nOther\n668\n2240\n4453\n12158\n33\n55434\n\n\nShrubs\n5275\n15854\n12885\n47470\n1\n69921\n\n\n\n\n\nCode\nas.data.frame(c(tmf2020, lulc[[5]]), xy = TRUE) |&gt;\n  filter(!is.na(LC)) |&gt; \n  ggplot(aes(x,y, fill=category)) +\n  geom_raster() +\n  coord_equal() +\n  theme_classic() +\n  facet_wrap(~LC) +\n  labs(x=NULL, y=NULL,fill=NULL)",
+    "crumbs": [
+      "Forest cover",
+      "Phlippines LULC data"
+    ]
+  },
+  {
+    "objectID": "22_cci_map.html",
+    "href": "22_cci_map.html",
+    "title": "Biomass map from ESA-CCI",
+    "section": "",
+    "text": "Data\nDocumentation: https://data.ceda.ac.uk/neodc/esacci/biomass/docs\nCode\nif(!dir.exists(\"data/CCI\")) dir.create(\"data/CCI\")\nu0 &lt;- \"https://dap.ceda.ac.uk/neodc/esacci/biomass/data/agb/maps/v6.0/geotiff/\" \nfor (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {\n  url1 &lt;- paste0(u0, year, \"/N20E120_ESACCI-BIOMASS-L4-AGB-MERGED-100m-\", \n                 year, \"-fv6.0.tif?download=1\")\n  path1 &lt;- paste0(\"data/CCI/N20E120_ESACCI-BIOMASS-L4-AGB-MERGED-100m-\", \n                  year, \"-fv6.0.tiff\")\n  file1 &lt;- paste0(\"data/CCI/umrbpl_ESACCI-BIOMASS-L4-AGB-MERGED-100m-\", \n                  year, \"-fv6.0.tiff\")\n  if (!file.exists(file1)) {\n    download.file(url1, path1, method = \"curl\")\n    path1 |&gt; rast() |&gt; crop(ext(121, 121.4, 14.5, 14.9)) |&gt; writeRaster(file1)\n    file.remove(path1)\n  }}\nrst &lt;- list.files(\"data/CCI/\", full.names = TRUE) |&gt; rast()\nnames(rst) &lt;- strsplit(names(rst), \"-\") |&gt; \n  sapply(function(x) paste0(\"AGB - \", x[7]))\nplot(rst)",
+    "crumbs": [
+      "Carbon density",
+      "Biomass map from ESA-CCI"
     ]
   }
 ]

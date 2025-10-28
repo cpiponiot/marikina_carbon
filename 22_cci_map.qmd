@@ -1,0 +1,36 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(sf)
+library(terra)
+library(ggplot2)
+```
+
+# Biomass map from ESA-CCI {.unnumbered}
+
+## Data
+
+Documentation: https://data.ceda.ac.uk/neodc/esacci/biomass/docs
+
+```{r}
+#| message: false
+#| warning: false
+if(!dir.exists("data/CCI")) dir.create("data/CCI")
+u0 <- "https://dap.ceda.ac.uk/neodc/esacci/biomass/data/agb/maps/v6.0/geotiff/" 
+for (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {
+  url1 <- paste0(u0, year, "/N20E120_ESACCI-BIOMASS-L4-AGB-MERGED-100m-", 
+                 year, "-fv6.0.tif?download=1")
+  path1 <- paste0("data/CCI/N20E120_ESACCI-BIOMASS-L4-AGB-MERGED-100m-", 
+                  year, "-fv6.0.tiff")
+  file1 <- paste0("data/CCI/umrbpl_ESACCI-BIOMASS-L4-AGB-MERGED-100m-", 
+                  year, "-fv6.0.tiff")
+  if (!file.exists(file1)) {
+    download.file(url1, path1, method = "curl")
+    path1 |> rast() |> crop(ext(121, 121.4, 14.5, 14.9)) |> writeRaster(file1)
+    file.remove(path1)
+  }}
+rst <- list.files("data/CCI/", full.names = TRUE) |> rast()
+names(rst) <- strsplit(names(rst), "-") |> 
+  sapply(function(x) paste0("AGB - ", x[7]))
+plot(rst)
+```

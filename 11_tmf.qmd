@@ -74,7 +74,7 @@ for (i in seq_len(dim(tmf)[3])) {
 }
 ```
 
-## Maps 
+## Maps
 
 ```{r}
 #| message: false
@@ -101,4 +101,3 @@ ggplot(data, aes(x = year)) +
   )) +
   labs(title = "TMF changes from 1990 to 2024", x = "Year", y = "Surface (Ha)")
 ```
-

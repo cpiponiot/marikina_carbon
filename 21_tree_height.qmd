@@ -8,9 +8,9 @@ library(ggplot2)
 
 # Tree height {.unnumbered}
 
-## Data 
+## Data
 
-This dataset was downloaded from Lang, N., Rodríguez, A. C., Schindler, K., & Wegner, J. D. (2021). Canopy top height and indicative high carbon stock maps for Indonesia, Malaysia, and Philippines (Version 1.0) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.5012448
+This dataset was downloaded from Lang, N., Rodríguez, A. C., Schindler, K., & Wegner, J. D. (2021). Canopy top height and indicative high carbon stock maps for Indonesia, Malaysia, and Philippines (Version 1.0) \[Data set\]. Zenodo. http://doi.org/10.5281/zenodo.5012448
 
 Tree height was estimated by combining Sentinel-2 optical satellite images and GEDI lidar data, using a deep convolutional neural network.
 
@@ -34,7 +34,6 @@ if (!file.exists(paste0(dir_height, "/canopy_top_height_2020_umrbpl.tif"))) {
     writeRaster(paste0(dir_height, "/canopy_top_height_2020_umrbpl.tif"))
 }
 ```
-
 
 ```{r}
 #| message: false
@@ -88,7 +87,6 @@ df_height |>
 
 ## Canopy height changes with TMF secondary forest age
 
-
 ```{r}
 #| message: false
 #| warning: false
@@ -108,4 +106,3 @@ df_height |>
   geom_point() +
   geom_smooth()
 ```
-

@@ -10,9 +10,11 @@ book:
     - part: 10_forest_cover.qmd
       chapters:
         - 11_tmf.qmd
+        - 12_lulc.qmd
     - part: 20_carbon_density.qmd
       chapters:
         - 21_tree_height.qmd
+        - 22_cci_map.qmd
 
 bibliography: references.bib
 
