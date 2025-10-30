@@ -153,7 +153,51 @@
     "href": "22_cci_map.html",
     "title": "Biomass map from ESA-CCI",
     "section": "",
-    "text": "Data\nDocumentation: https://data.ceda.ac.uk/neodc/esacci/biomass/docs\nCode\nif(!dir.exists(\"data/CCI\")) dir.create(\"data/CCI\")\nu0 &lt;- \"https://dap.ceda.ac.uk/neodc/esacci/biomass/data/agb/maps/v6.0/geotiff/\" \nfor (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {\n  url1 &lt;- paste0(u0, year, \"/N20E120_ESACCI-BIOMASS-L4-AGB-MERGED-100m-\", \n                 year, \"-fv6.0.tif?download=1\")\n  path1 &lt;- paste0(\"data/CCI/N20E120_ESACCI-BIOMASS-L4-AGB-MERGED-100m-\", \n                  year, \"-fv6.0.tiff\")\n  file1 &lt;- paste0(\"data/CCI/umrbpl_ESACCI-BIOMASS-L4-AGB-MERGED-100m-\", \n                  year, \"-fv6.0.tiff\")\n  if (!file.exists(file1)) {\n    download.file(url1, path1, method = \"curl\")\n    path1 |&gt; rast() |&gt; crop(ext(121, 121.4, 14.5, 14.9)) |&gt; writeRaster(file1)\n    file.remove(path1)\n  }}\nrst &lt;- list.files(\"data/CCI/\", full.names = TRUE) |&gt; rast()\nnames(rst) &lt;- strsplit(names(rst), \"-\") |&gt; \n  sapply(function(x) paste0(\"AGB - \", x[7]))\nplot(rst)",
+    "text": "Data\nThe maps are 100-meter resolution, global aboveground biomass maps produced by the European Space Agency’s (ESA) Climate Change Initiative (CCI). These products are based on data from the ESA’s C-band (Sentinel-1A and -1B) and the JAXA’s L-band Synthetic Aperture Radar (ALOS-2 PALSAR-2), as well as additional information from spaceborne lidar (e.g., NASA’s Global Ecosystem Dynamics Investigation Lidar, or GEDI).\nAccording to their validation protocol, they have a substantial validation dataset in the Philippines.\nCode\nif(!dir.exists(\"data/CCI\")) dir.create(\"data/CCI\")\nu0 &lt;- \"https://dap.ceda.ac.uk/neodc/esacci/biomass/data/agb/maps/v6.0/geotiff/\" \nfor (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {\n  for (var in c(\"AGB\", \"AGB_SD\")) {\n    url1 &lt;- paste0(u0, year, \"/N20E120_ESACCI-BIOMASS-L4-\", var, \n                   \"-MERGED-100m-\", year, \"-fv6.0.tif?download=1\")\n    path1 &lt;- paste0(\"data/CCI/N20E120_ESACCI-BIOMASS-L4-\", var, \n                   \"-MERGED-100m-\", year, \"-fv6.0.tiff\")\n    file1 &lt;- paste0(\"data/CCI/umrbpl_ESACCI-BIOMASS-L4-\", var, \n                   \"-MERGED-100m-\", year, \"-fv6.0.tiff\")\n    if (!file.exists(file1)) {\n      download.file(url1, path1, method = \"curl\")\n      path1 |&gt; rast() |&gt; crop(ext(121, 121.4, 14.5, 14.9)) |&gt; writeRaster(file1)\n      file.remove(path1)\n    }}}\n  \narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\nagb &lt;- list.files(\"data/CCI/\", full.names = TRUE) |&gt; \n  grep(pattern = \"AGB-\", value = TRUE) |&gt; \n  rast() |&gt; crop(ext(area)) |&gt; mask(area) |&gt; \n  tidyterra::rename_with(~sapply(strsplit(.x, \"-\"), function(i) i[7]))\nuncertainty &lt;- list.files(\"data/CCI/\", full.names = TRUE) |&gt; \n  grep(pattern = \"AGB_SD\", value = TRUE) |&gt; \n  rast() |&gt; crop(ext(area)) |&gt; mask(area) |&gt; \n  tidyterra::rename_with(~sapply(strsplit(.x, \"-\"), function(i) i[7]))\n\nggplot() +\n  geom_spatraster(data = agb) +\n  facet_wrap(~lyr, nrow = 2) +\n  scale_fill_viridis_c(\"AGB\\n(Mg/ha)\")\n\n\n\n\n\n\n\n\n\nCode\nggplot() +\n  geom_spatraster(data = uncertainty/agb*100) +\n  facet_wrap(~lyr, nrow = 2) +\n  scale_fill_viridis_c(\"Coefficient of variation (%)\", option = \"magma\")",
+    "crumbs": [
+      "Carbon density",
+      "Biomass map from ESA-CCI"
+    ]
+  },
+  {
+    "objectID": "22_cci_map.html#distribution-of-agb-by-tmf-class",
+    "href": "22_cci_map.html#distribution-of-agb-by-tmf-class",
+    "title": "Biomass map from ESA-CCI",
+    "section": "Distribution of AGB by TMF class",
+    "text": "Distribution of AGB by TMF class\n\n\nCode\ntmf &lt;- list.files(\"data/tmf\", \"AnnualChange\", full.names = TRUE) |&gt;\n  rast() |&gt; crop(area) |&gt;  mask(area)\nagb &lt;- resample(agb, tmf, method = \"average\")\n\ndf_tmf &lt;- as.data.frame(tmf, xy = TRUE) |&gt; \n  pivot_longer(cols = matches(\"19|20\"), names_to = \"year\", values_to = \"class\") |&gt; \n  mutate(year = gsub(\"Dec\", \"\", year)) |&gt; \n  filter(class != 0)\ndf_tmf$class &lt;- factor(df_tmf$class)\nlevels(df_tmf$class) &lt;- c(\n  \"Undisturbed\", \"Degraded\", \"Deforested\",\n  \"Regrowth\", \"Water\", \"Other\"\n)\ndf_agb &lt;- as.data.frame(agb, xy = TRUE) |&gt; \n  pivot_longer(cols = contains(\"20\"), names_to = \"year\", values_to = \"agb\") |&gt;\n  inner_join(as.data.frame(cellSize(agb, unit = \"ha\"), xy = TRUE))\ndata_all &lt;- inner_join(df_agb, df_tmf)\n\nggplot(data_all) +\n  geom_violin(aes(x = class, y = agb, col = class))",
+    "crumbs": [
+      "Carbon density",
+      "Biomass map from ESA-CCI"
+    ]
+  },
+  {
+    "objectID": "22_cci_map.html#agb-by-secondary-forest-age-according-to-tmf",
+    "href": "22_cci_map.html#agb-by-secondary-forest-age-according-to-tmf",
+    "title": "Biomass map from ESA-CCI",
+    "section": "AGB by secondary forest age (according to TMF)",
+    "text": "AGB by secondary forest age (according to TMF)\n\n\nCode\ndf_age &lt;- lapply(unique(df_agb$year), function(yr) {\n  i &lt;- grep(yr, names(tmf))\n  tmf_sec_age &lt;- mask(x = tmf[[seq_len(i)]], ifel(tmf[[i]] == 4, 1, NA)) |&gt;\n  app(\\(x) {\n    if (any(!is.na(x) & x != 4)) {\n      length(x) - max(which(x != 4))\n    } else {\n      NA\n    }\n  })\n  as.data.frame(tmf_sec_age, xy = TRUE) |&gt; \n    rename(age = lyr.1) |&gt; \n    inner_join(filter(df_agb, year == yr))\n}) |&gt; bind_rows()\n  \nggplot(df_age, aes(x = age, y = agb)) +\n  geom_bin2d(bins = 40) +\n  geom_smooth() +\n  scale_fill_continuous(type = \"viridis\") +\n  theme_bw()",
+    "crumbs": [
+      "Carbon density",
+      "Biomass map from ESA-CCI"
+    ]
+  },
+  {
+    "objectID": "22_cci_map.html#agb-stocks-by-tmf-class-through-time",
+    "href": "22_cci_map.html#agb-stocks-by-tmf-class-through-time",
+    "title": "Biomass map from ESA-CCI",
+    "section": "AGB stocks by TMF class through time",
+    "text": "AGB stocks by TMF class through time\n\n\nCode\ndata_all |&gt; \n  group_by(class, year) |&gt; \n  summarise(agbtot = sum(agb*area)) |&gt;\n  ggplot(aes(fill=class, y=agbtot, x=as.numeric(year))) + \n    geom_bar(position=\"stack\", stat=\"identity\") +\n  labs(y = \"AGB (Mg/ha)\", x = \"Year\") +\n  scale_fill_manual(name = \"\", values = c(\n    \"Undisturbed\" = \"darkgreen\",\n    \"Degraded\" = \"orange\",\n    \"Deforested\" = \"red\",\n    \"Regrowth\" = \"green\",\n    \"Water\" = \"lightblue\",\n    \"Other\" = \"grey\"\n  )) +\n  theme_classic()",
+    "crumbs": [
+      "Carbon density",
+      "Biomass map from ESA-CCI"
+    ]
+  },
+  {
+    "objectID": "22_cci_map.html#agb-vs-secondary-forest-age-according-to-tmf",
+    "href": "22_cci_map.html#agb-vs-secondary-forest-age-according-to-tmf",
+    "title": "Biomass map from ESA-CCI",
+    "section": "AGB vs secondary forest age (according to TMF)",
+    "text": "AGB vs secondary forest age (according to TMF)\n\n\nCode\ndf_age &lt;- lapply(unique(df_agb$year), function(yr) {\n  i &lt;- grep(yr, names(tmf))\n  tmf_sec_age &lt;- mask(x = tmf[[seq_len(i)]], ifel(tmf[[i]] == 4, 1, NA)) |&gt;\n  app(\\(x) {\n    if (any(!is.na(x) & x != 4)) {\n      length(x) - max(which(x != 4))\n    } else {\n      NA\n    }\n  })\n  as.data.frame(tmf_sec_age, xy = TRUE) |&gt; \n    rename(age = lyr.1) |&gt; \n    inner_join(filter(df_agb, year == yr))\n}) |&gt; bind_rows()\n  \nggplot(df_age, aes(x = age, y = agb)) +\n  geom_bin2d(bins = 40) +\n  geom_smooth() +\n  scale_fill_continuous(type = \"viridis\") +\n  theme_bw()",
     "crumbs": [
       "Carbon density",
       "Biomass map from ESA-CCI"

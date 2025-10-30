@@ -204,6 +204,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#data" id="toc-data" class="nav-link active" data-scroll-target="#data">Data</a></li>
+  <li><a href="#distribution-of-agb-by-tmf-class" id="toc-distribution-of-agb-by-tmf-class" class="nav-link" data-scroll-target="#distribution-of-agb-by-tmf-class">Distribution of AGB by TMF class</a></li>
+  <li><a href="#agb-stocks-by-tmf-class-through-time" id="toc-agb-stocks-by-tmf-class-through-time" class="nav-link" data-scroll-target="#agb-stocks-by-tmf-class-through-time">AGB stocks by TMF class through time</a></li>
+  <li><a href="#agb-vs-secondary-forest-age-according-to-tmf" id="toc-agb-vs-secondary-forest-age-according-to-tmf" class="nav-link" data-scroll-target="#agb-vs-secondary-forest-age-according-to-tmf">AGB vs secondary forest age (according to TMF)</a></li>
   </ul>
 </nav>
     </div>
@@ -234,38 +237,170 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyterra)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<p>The maps are 100-meter resolution, global aboveground biomass maps produced by the European Space Agency’s (ESA) Climate Change Initiative (CCI). These products are based on data from the ESA’s C-band (Sentinel-1A and -1B) and the JAXA’s L-band Synthetic Aperture Radar (ALOS-2 PALSAR-2), as well as additional information from spaceborne lidar (e.g., NASA’s Global Ecosystem Dynamics Investigation Lidar, or GEDI).</p>
+<p>According to their <a href="https://climate.esa.int/media/documents/D4.3_CCI_PUG_V5.0_20240617.pdf">validation protocol</a>, they have a substantial validation dataset in the Philippines.</p>
+<p><img src="figures/validation_data_cci.png" class="img-fluid"></p>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
-<p>Documentation: https://data.ceda.ac.uk/neodc/esacci/biomass/docs</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">dir.exists</span>(<span class="st">"data/CCI"</span>)) <span class="fu">dir.create</span>(<span class="st">"data/CCI"</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>u0 <span class="ot">&lt;-</span> <span class="st">"https://dap.ceda.ac.uk/neodc/esacci/biomass/data/agb/maps/v6.0/geotiff/"</span> </span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (year <span class="cf">in</span> <span class="fu">c</span>(<span class="dv">2007</span>, <span class="dv">2010</span>, <span class="dv">2015</span>, <span class="dv">2016</span>, <span class="dv">2017</span>, <span class="dv">2018</span>, <span class="dv">2019</span>, <span class="dv">2020</span>, <span class="dv">2021</span>, <span class="dv">2022</span>)) {</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  url1 <span class="ot">&lt;-</span> <span class="fu">paste0</span>(u0, year, <span class="st">"/N20E120_ESACCI-BIOMASS-L4-AGB-MERGED-100m-"</span>, </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                 year, <span class="st">"-fv6.0.tif?download=1"</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  path1 <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"data/CCI/N20E120_ESACCI-BIOMASS-L4-AGB-MERGED-100m-"</span>, </span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                  year, <span class="st">"-fv6.0.tiff"</span>)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  file1 <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"data/CCI/umrbpl_ESACCI-BIOMASS-L4-AGB-MERGED-100m-"</span>, </span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                  year, <span class="st">"-fv6.0.tiff"</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(file1)) {</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">download.file</span>(url1, path1, <span class="at">method =</span> <span class="st">"curl"</span>)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    path1 <span class="sc">|&gt;</span> <span class="fu">rast</span>() <span class="sc">|&gt;</span> <span class="fu">crop</span>(<span class="fu">ext</span>(<span class="dv">121</span>, <span class="fl">121.4</span>, <span class="fl">14.5</span>, <span class="fl">14.9</span>)) <span class="sc">|&gt;</span> <span class="fu">writeRaster</span>(file1)</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">file.remove</span>(path1)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  }}</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>rst <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/CCI/"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> <span class="fu">rast</span>()</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(rst) <span class="ot">&lt;-</span> <span class="fu">strsplit</span>(<span class="fu">names</span>(rst), <span class="st">"-"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(<span class="cf">function</span>(x) <span class="fu">paste0</span>(<span class="st">"AGB - "</span>, x[<span class="dv">7</span>]))</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rst)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (var <span class="cf">in</span> <span class="fu">c</span>(<span class="st">"AGB"</span>, <span class="st">"AGB_SD"</span>)) {</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    url1 <span class="ot">&lt;-</span> <span class="fu">paste0</span>(u0, year, <span class="st">"/N20E120_ESACCI-BIOMASS-L4-"</span>, var, </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"-MERGED-100m-"</span>, year, <span class="st">"-fv6.0.tif?download=1"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    path1 <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"data/CCI/N20E120_ESACCI-BIOMASS-L4-"</span>, var, </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"-MERGED-100m-"</span>, year, <span class="st">"-fv6.0.tiff"</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    file1 <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"data/CCI/umrbpl_ESACCI-BIOMASS-L4-"</span>, var, </span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"-MERGED-100m-"</span>, year, <span class="st">"-fv6.0.tiff"</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(file1)) {</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">download.file</span>(url1, path1, <span class="at">method =</span> <span class="st">"curl"</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>      path1 <span class="sc">|&gt;</span> <span class="fu">rast</span>() <span class="sc">|&gt;</span> <span class="fu">crop</span>(<span class="fu">ext</span>(<span class="dv">121</span>, <span class="fl">121.4</span>, <span class="fl">14.5</span>, <span class="fl">14.9</span>)) <span class="sc">|&gt;</span> <span class="fu">writeRaster</span>(file1)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>      <span class="fu">file.remove</span>(path1)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    }}}</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>area <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/umrbpl/"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>, <span class="at">pattern =</span> <span class="st">"shp$"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_sf</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>agb <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/CCI/"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span>(<span class="at">pattern =</span> <span class="st">"AGB-"</span>, <span class="at">value =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>() <span class="sc">|&gt;</span> <span class="fu">crop</span>(<span class="fu">ext</span>(area)) <span class="sc">|&gt;</span> <span class="fu">mask</span>(area) <span class="sc">|&gt;</span> </span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  tidyterra<span class="sc">::</span><span class="fu">rename_with</span>(<span class="sc">~</span><span class="fu">sapply</span>(<span class="fu">strsplit</span>(.x, <span class="st">"-"</span>), <span class="cf">function</span>(i) i[<span class="dv">7</span>]))</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>uncertainty <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/CCI/"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span>(<span class="at">pattern =</span> <span class="st">"AGB_SD"</span>, <span class="at">value =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>() <span class="sc">|&gt;</span> <span class="fu">crop</span>(<span class="fu">ext</span>(area)) <span class="sc">|&gt;</span> <span class="fu">mask</span>(area) <span class="sc">|&gt;</span> </span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>  tidyterra<span class="sc">::</span><span class="fu">rename_with</span>(<span class="sc">~</span><span class="fu">sapply</span>(<span class="fu">strsplit</span>(.x, <span class="st">"-"</span>), <span class="cf">function</span>(i) i[<span class="dv">7</span>]))</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_spatraster</span>(<span class="at">data =</span> agb) <span class="sc">+</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>lyr, <span class="at">nrow =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_viridis_c</span>(<span class="st">"AGB</span><span class="sc">\n</span><span class="st">(Mg/ha)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="22_cci_map_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="22_cci_map_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_spatraster</span>(<span class="at">data =</span> uncertainty<span class="sc">/</span>agb<span class="sc">*</span><span class="dv">100</span>) <span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>lyr, <span class="at">nrow =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_viridis_c</span>(<span class="st">"Coefficient of variation (%)"</span>, <span class="at">option =</span> <span class="st">"magma"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="22_cci_map_files/figure-html/unnamed-chunk-1-2.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="distribution-of-agb-by-tmf-class" class="level2">
+<h2 class="anchored" data-anchor-id="distribution-of-agb-by-tmf-class">Distribution of AGB by TMF class</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>tmf <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/tmf"</span>, <span class="st">"AnnualChange"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>() <span class="sc">|&gt;</span> <span class="fu">crop</span>(area) <span class="sc">|&gt;</span>  <span class="fu">mask</span>(area)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>agb <span class="ot">&lt;-</span> <span class="fu">resample</span>(agb, tmf, <span class="at">method =</span> <span class="st">"average"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>df_tmf <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(tmf, <span class="at">xy =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">matches</span>(<span class="st">"19|20"</span>), <span class="at">names_to =</span> <span class="st">"year"</span>, <span class="at">values_to =</span> <span class="st">"class"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">gsub</span>(<span class="st">"Dec"</span>, <span class="st">""</span>, year)) <span class="sc">|&gt;</span> </span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(class <span class="sc">!=</span> <span class="dv">0</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>df_tmf<span class="sc">$</span>class <span class="ot">&lt;-</span> <span class="fu">factor</span>(df_tmf<span class="sc">$</span>class)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(df_tmf<span class="sc">$</span>class) <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Undisturbed"</span>, <span class="st">"Degraded"</span>, <span class="st">"Deforested"</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Regrowth"</span>, <span class="st">"Water"</span>, <span class="st">"Other"</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>df_agb <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(agb, <span class="at">xy =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">contains</span>(<span class="st">"20"</span>), <span class="at">names_to =</span> <span class="st">"year"</span>, <span class="at">values_to =</span> <span class="st">"agb"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">as.data.frame</span>(<span class="fu">cellSize</span>(agb, <span class="at">unit =</span> <span class="st">"ha"</span>), <span class="at">xy =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>data_all <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(df_agb, df_tmf)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data_all) <span class="sc">+</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_violin</span>(<span class="fu">aes</span>(<span class="at">x =</span> class, <span class="at">y =</span> agb, <span class="at">col =</span> class))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="22_cci_map_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="agb-stocks-by-tmf-class-through-time" class="level2">
+<h2 class="anchored" data-anchor-id="agb-stocks-by-tmf-class-through-time">AGB stocks by TMF class through time</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>data_all <span class="sc">|&gt;</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(class, year) <span class="sc">|&gt;</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">agbtot =</span> <span class="fu">sum</span>(agb<span class="sc">*</span>area)) <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">fill=</span>class, <span class="at">y=</span>agbtot, <span class="at">x=</span><span class="fu">as.numeric</span>(year))) <span class="sc">+</span> </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_bar</span>(<span class="at">position=</span><span class="st">"stack"</span>, <span class="at">stat=</span><span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"AGB (Mg/ha)"</span>, <span class="at">x =</span> <span class="st">"Year"</span>) <span class="sc">+</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">name =</span> <span class="st">""</span>, <span class="at">values =</span> <span class="fu">c</span>(</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Undisturbed"</span> <span class="ot">=</span> <span class="st">"darkgreen"</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Degraded"</span> <span class="ot">=</span> <span class="st">"orange"</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Deforested"</span> <span class="ot">=</span> <span class="st">"red"</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Regrowth"</span> <span class="ot">=</span> <span class="st">"green"</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Water"</span> <span class="ot">=</span> <span class="st">"lightblue"</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Other"</span> <span class="ot">=</span> <span class="st">"grey"</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="22_cci_map_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="agb-vs-secondary-forest-age-according-to-tmf" class="level2">
+<h2 class="anchored" data-anchor-id="agb-vs-secondary-forest-age-according-to-tmf">AGB vs secondary forest age (according to TMF)</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df_age <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">unique</span>(df_agb<span class="sc">$</span>year), <span class="cf">function</span>(yr) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  i <span class="ot">&lt;-</span> <span class="fu">grep</span>(yr, <span class="fu">names</span>(tmf))</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  tmf_sec_age <span class="ot">&lt;-</span> <span class="fu">mask</span>(<span class="at">x =</span> tmf[[<span class="fu">seq_len</span>(i)]], <span class="fu">ifel</span>(tmf[[i]] <span class="sc">==</span> <span class="dv">4</span>, <span class="dv">1</span>, <span class="cn">NA</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">app</span>(\(x) {</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">any</span>(<span class="sc">!</span><span class="fu">is.na</span>(x) <span class="sc">&amp;</span> x <span class="sc">!=</span> <span class="dv">4</span>)) {</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">length</span>(x) <span class="sc">-</span> <span class="fu">max</span>(<span class="fu">which</span>(x <span class="sc">!=</span> <span class="dv">4</span>))</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>      <span class="cn">NA</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>(tmf_sec_age, <span class="at">xy =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">age =</span> lyr<span class="fl">.1</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(<span class="fu">filter</span>(df_agb, year <span class="sc">==</span> yr))</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">|&gt;</span> <span class="fu">bind_rows</span>()</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_age, <span class="fu">aes</span>(<span class="at">x =</span> age, <span class="at">y =</span> agb)) <span class="sc">+</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin2d</span>(<span class="at">bins =</span> <span class="dv">40</span>) <span class="sc">+</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>() <span class="sc">+</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_continuous</span>(<span class="at">type =</span> <span class="st">"viridis"</span>) <span class="sc">+</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="22_cci_map_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
