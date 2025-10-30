@@ -9,7 +9,7 @@ library(data.table)
 library(knitr)
 ```
 
-# Phlippines LULC data {.unnumbered}
+# Philippines LULC data {.unnumbered}
 
 ```{r}
 #| message: false
@@ -18,16 +18,17 @@ area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 tmf2020 <- "data/tmf/JRC_TMF_AnnualChange_v1_2020_ASI_ID76_N20_E120.tif" |>
-  rast() |> crop(area) |> mask(area)
+  rast() |>
+  crop(area) |>
+  mask(area)
 ```
-
 
 ```{r}
 #| message: false
 #| warning: false
 names_class <- c("LC1988", "LC2003", "AGG14", "AGG12", "CLASS_NAME")
 lulc <- list.files("data/LULC", recursive = TRUE, "shp", full.names = TRUE) |>
-  lapply(vect) |> 
+  lapply(vect) |>
   # project in longlat
   lapply(function(x) project(x, "epsg:4326")) |>
   # harmonize class names
@@ -35,10 +36,11 @@ lulc <- list.files("data/LULC", recursive = TRUE, "shp", full.names = TRUE) |>
     x$LC <- as.data.frame(x)[, which(names(x) %in% names_class)[1]]
     x$LC[grepl("wood|shrub", tolower(x$LC))] <- "Shrubs"
     x$LC[grepl("crop|grass|built|water|barren|fish", tolower(x$LC))] <- "Other"
-    return(x)
-  }) |> 
-  lapply(function(x) 
-    rasterize(x, tmf2020, "LC")) |>
+    return(x) #nolint
+  }) |>
+  lapply(function(x) {
+    rasterize(x, tmf2020, "LC")
+  }) |>
   rast()
 ```
 
@@ -50,35 +52,37 @@ lulc <- list.files("data/LULC", recursive = TRUE, "shp", full.names = TRUE) |>
 #| fig.width: 10
 #| fig.height: 8
 df_lulc <- as.data.frame(lulc, xy = TRUE)
-names(df_lulc) <- 
+names(df_lulc) <-
   c("lon", "lat", "LC1988", "LC2003", "AGG14", "AGG12", "CLASS_NAME")
-df_lulc |> 
-  setDT() |> melt(id.vars = c("lon", "lat")) |> 
-  ggplot(aes(lon, lat, fill=value)) +
-  geom_raster() + 
+df_lulc |>
+  setDT() |>
+  melt(id.vars = c("lon", "lat")) |>
+  ggplot(aes(lon, lat, fill = value)) +
+  geom_raster() +
   scale_fill_manual(values = c("chartreuse4", "chartreuse2", "grey", "gold")) +
   facet_wrap(~variable) +
   coord_equal() +
   theme_classic() +
-  labs(x=NULL, y=NULL, fill=NULL) +
+  labs(x = NULL, y = NULL, fill = NULL) +
   theme(legend.position = c(0.85, 0.2))
 ```
+
 ```{r}
 #| message: false
 #| warning: false
 files <- list.files("data/LULC", recursive = TRUE, "shp")
 years <- data.frame(
-  layer = seq_len(length(files)), 
+  layer = seq_len(length(files)),
   year = as.numeric(substr(files, 1, 4))
 )
-freq(lulc) |> 
-  mutate(area = count*0.09) |> 
-  left_join(years) |> 
-  ggplot(aes(year, area, col=value)) +
+freq(lulc) |>
+  mutate(area = count * 0.09) |>
+  left_join(years) |>
+  ggplot(aes(year, area, col = value)) +
   geom_line() +
   scale_color_manual(values = c("chartreuse4", "chartreuse2", "grey", "gold")) +
   theme_classic() +
-  labs(x="Year", y="Area [ha]", col=NULL)
+  labs(x = "Year", y = "Area [ha]", col = NULL)
 ```
 
 ## Comparison with TMF
@@ -89,19 +93,23 @@ freq(lulc) |>
 #| fig.width: 6
 #| fig.height: 10
 levels(tmf2020) <- data.frame(
-  value = 0:6, 
-  category = c(NA, "Undisturbed Forest", "Degraded Forest", "Deforested", 
-                "Regrowing Forest", "Water", "Other"))
+  value = 0:6,
+  category = c(
+    NA, "Undisturbed Forest", "Degraded Forest", "Deforested",
+    "Regrowing Forest", "Water", "Other"
+  )
+)
 
 as.data.frame(c(tmf2020, lulc[[5]])) |>
-  select(LC, category) |> table() |> kable()
+  select(LC, category) |>
+  table() |>
+  kable()
 as.data.frame(c(tmf2020, lulc[[5]]), xy = TRUE) |>
-  filter(!is.na(LC)) |> 
-  ggplot(aes(x,y, fill=category)) +
+  filter(!is.na(LC)) |>
+  ggplot(aes(x, y, fill = category)) +
   geom_raster() +
   coord_equal() +
   theme_classic() +
   facet_wrap(~LC) +
-  labs(x=NULL, y=NULL,fill=NULL)
+  labs(x = NULL, y = NULL, fill = NULL)
 ```
-
