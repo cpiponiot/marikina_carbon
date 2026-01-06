@@ -1,0 +1,48 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(terra)
+library(sf)
+library(elevatr)
+```
+
+# Topographic variables {.unnumbered}
+
+Elevation data were obtained from the Shuttle Radar Topography Mission (SRTM) product at a spatial resolution of 1 arc-second. From the digital elevation model, terrain derivatives including slope and aspect were computed, along with flow accumulation, defined as the total upstream contributing area for each grid cell. The topographic wetness index (TWI) was then calculated as the natural logarithm of the ratio between flow accumulation and the tangent of slope (expressed in radians).
+
+```{r}
+#| message: false
+#| warning: false
+#| eval: false
+# use API key from https://portal.opentopography.org below to access data:
+api_key <- NULL # change to API key
+if (!is.null(api_key)) set_opentopo_key(api_key)
+
+# UMRBPL boundaries
+area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+  read_sf() |>
+  st_transform(crs = "EPSG:4326")
+
+elevation <- get_elev_raster(area, src = "gl1", clip = "bbox") |>
+  rast() |>
+  project("EPSG:102457")
+slope <- terrain(elevation, "slope", unit = "radians")
+aspect <- terrain(elevation, "aspect", unit = "radians")
+accum <- terrain(elevation, "flowdir") |> flowAccumulation()
+twi <- log(accum * prod(res(elevation)) / tan(slope))
+topo <- c(elevation, slope, aspect, twi)
+names(topo) <- c("elevation", "slope", "aspect", "twi")
+
+if (!dir.exists("data/srtm")) dir.create("data/srtm")
+writeRaster(topo, file = "data/srtm/topo_variables.tif", overwrite = TRUE)
+```
+
+
+```{r}
+#| message: false
+#| warning: false
+"data/srtm/topo_variables.tif" |>
+  rast() |>
+  plot()
+```
+

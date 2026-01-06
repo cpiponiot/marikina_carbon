@@ -7,14 +7,19 @@ book:
   date: last-modified
   chapters:
     - index.qmd
-    - part: 10_forest_cover.qmd
+    - part: 10_forest_metrics.qmd
       chapters:
-        - 11_tmf.qmd
-        - 12_lulc.qmd
-    - part: 20_carbon_density.qmd
+        - 11_tree_height.qmd
+        - 12_cci_map.qmd
+    - part: 20_environment.qmd
       chapters:
-        - 21_tree_height.qmd
-        - 22_cci_map.qmd
+        - 21_topography.qmd
+        - 22_climate.qmd
+    - part: 30_socioeco.qmd
+      chapters:
+        - 31_tmf.qmd
+        - 32_lulc.qmd
+        - 33_roads.qmd
 
 bibliography: references.bib
 

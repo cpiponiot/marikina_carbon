@@ -12,7 +12,7 @@ library(dplyr)
 
 The maps are 100-meter resolution, global aboveground biomass maps produced by the European Space Agency's (ESA) Climate Change Initiative (CCI). These products are based on data from the ESA's C-band (Sentinel-1A and -1B) and the JAXA's L-band Synthetic Aperture Radar (ALOS-2 PALSAR-2), as well as additional information from spaceborne lidar (e.g., NASA's Global Ecosystem Dynamics Investigation Lidar, or GEDI).
 
-According to their [validation protocol](https://climate.esa.int/media/documents/D4.3_CCI_PUG_V5.0_20240617.pdf), they have a substantial validation dataset in the Philippines. 
+According to their [validation protocol](https://climate.esa.int/media/documents/D4.3_CCI_PUG_V5.0_20240617.pdf), they have a substantial validation dataset in the Philippines.
 
 ![](figures/validation_data_cci.png)
 
@@ -49,7 +49,6 @@ for (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {
     }
   }
 }
-
 area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
@@ -88,8 +87,10 @@ tmf <- list.files("data/tmf", "AnnualChange", full.names = TRUE) |>
 agb <- resample(agb, tmf, method = "average")
 
 df_tmf <- as.data.frame(tmf, xy = TRUE) |>
-  pivot_longer(cols = matches("19|20"),
-               names_to = "year", values_to = "class") |>
+  pivot_longer(
+    cols = matches("19|20"),
+    names_to = "year", values_to = "class"
+  ) |>
   mutate(year = gsub("Dec", "", year)) |>
   filter(class != 0)
 df_tmf$class <- factor(df_tmf$class)
@@ -130,11 +131,13 @@ data_all |>
 
 ## AGB vs secondary forest age (according to TMF)
 
+Only forests marked as secondary:
+
 ```{r}
 #| message: false
 #| warning: false
 df_age <- lapply(unique(df_agb$year), function(yr) {
-  i <- grep(yr, names(tmf)) #nolint
+  i <- grep(yr, names(tmf)) # nolint
   tmf_sec_age <- mask(x = tmf[[seq_len(i)]], ifel(tmf[[i]] == 4, 1, NA)) |>
     app(\(x) {
       if (any(!is.na(x) & x != 4)) {
@@ -145,7 +148,8 @@ df_age <- lapply(unique(df_agb$year), function(yr) {
     })
   as.data.frame(tmf_sec_age, xy = TRUE) |>
     rename(age = lyr.1) |>
-    inner_join(filter(df_agb, year == yr))}) |>
+    inner_join(filter(df_agb, year == yr))
+}) |>
   bind_rows()
 
 ggplot(df_age, aes(x = age, y = agb)) +
@@ -154,4 +158,3 @@ ggplot(df_age, aes(x = age, y = agb)) +
   scale_fill_continuous(type = "viridis") +
   theme_bw()
 ```
-

@@ -36,7 +36,7 @@ lulc <- list.files("data/LULC", recursive = TRUE, "shp", full.names = TRUE) |>
     x$LC <- as.data.frame(x)[, which(names(x) %in% names_class)[1]]
     x$LC[grepl("wood|shrub", tolower(x$LC))] <- "Shrubs"
     x$LC[grepl("crop|grass|built|water|barren|fish", tolower(x$LC))] <- "Other"
-    return(x) #nolint
+    return(x) # nolint
   }) |>
   lapply(function(x) {
     rasterize(x, tmf2020, "LC")
@@ -72,7 +72,7 @@ df_lulc |>
 #| warning: false
 files <- list.files("data/LULC", recursive = TRUE, "shp")
 years <- data.frame(
-  layer = seq_len(length(files)),
+  layer = seq_along(length(files)),
   year = as.numeric(substr(files, 1, 4))
 )
 freq(lulc) |>

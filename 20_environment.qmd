@@ -1,0 +1,8 @@
+```{r setup}
+#| message: false
+#| warning: false
+```
+
+# Environmental variables {.unnumbered}
+
+Forest aboveground carbon stocks have been proven to be linked to environmental variables such as climate and soil characteristics [@Muller-Landau2020]. Topography can impact soil properties and water availability and also plays a role in the distribution of carbon stocks [@Muscarella2020]. Due to the variation of soil characteristics at fine spatial scales and the lack of local soil data, we do not expect global soil databases to provide much information about local soil characteristics. For this reason, we focus only on climate and topographic variables as predictors of aboveground carbon stocks.

@@ -1,0 +1,48 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(terra)
+library(sf)
+```
+
+# Climate variables {.unnumbered}
+
+Climate variables were downloaded from the CHELSA climate 2.1 database, at a 1-km resolution. 
+
+```{r}
+#| message: false
+#| warning: false
+#| eval: false
+area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+  read_sf() |>
+  st_transform(crs = "EPSG:4326")
+
+if (!require(Rchelsa)) {
+  remotes::install_git("https://gitlabext.wsl.ch/karger/rchelsa.git")
+  library(Rchelsa)
+}
+clim <- lapply(
+  c("bio01", "bio12"),
+  function(rs) {
+    getChelsa(
+      rs,
+      extent = ext(area),
+      date = "1981-2010", dataset = "chelsa-bioclim"
+    )
+  }
+) |>
+  rast()
+names(clim) <- c("mean_temperature", "mean_precipitation")
+
+if (!dir.exists("data/chelsa")) dir.create("data/chelsa")
+writeRaster(clim, file = "data/chelsa/climate_variables.tif", overwrite = TRUE)
+```
+
+
+```{r}
+#| message: false
+#| warning: false
+"data/chelsa/climate_variables.tif" |>
+  rast() |>
+  plot()
+```

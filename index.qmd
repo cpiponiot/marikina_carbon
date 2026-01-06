@@ -2,7 +2,7 @@
 
 # Introduction {.unnumbered}
 
-**marikina_carbon** explores the changes in forest cover and forest carbon density in the Upper Marikina River Basin Protected Landscape.
+**marikina_carbon** explores changes in forest cover and carbon density in the Upper Marikina River Basin Protected Landscape (UMRBPL). The project also compiles a dataset of spatially explicit independent variables used to model changes in aboveground carbon distribution in the UMRBPL.
 
 ## Usage
 
@@ -16,7 +16,7 @@ All **marikina_carbon** analyses rely on the quarto documents (`files.qmd`) that
     -   Reproducible analyses in `files.qmd`
     -   Resulting pages in `docs/`
     -   Document structure definition in `_quarto.yml`
--   Data in `data/` 
+-   Data in `data/`
 -   R scripts with functions in `r/`
 -   R environment definition with [renv](https://rstudio.github.io/renv/articles/renv.html) in `renv/` and `renv/lock`
 -   R files (`.Rbuildignore` , `.Rdata` , `.Rprofile` , `.Rhistory`, `.lintr`)
@@ -25,8 +25,8 @@ All **marikina_carbon** analyses rely on the quarto documents (`files.qmd`) that
 
 ## Contribution
 
-You can contribute to the project by forking the repository on github and cloning the fork to your machine using several options, including GitHub desktop GUI. 
+You can contribute to the project by forking the repository on github and cloning the fork to your machine using several options, including GitHub desktop GUI.
 
 ## Help
 
-Please create an issue on GitHub for any questions, bugs or help needed regarding **marikina_carbon**: [https://github.com/cpiponiot/marikina_carbon/issues](https://github.com/cpiponiot/marikina_carbon/issues){.uri}. 
+Please create an issue on GitHub for any questions, bugs or help needed regarding **marikina_carbon**: <https://github.com/cpiponiot/marikina_carbon/issues>.
