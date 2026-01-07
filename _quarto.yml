@@ -20,6 +20,7 @@ book:
         - 31_tmf.qmd
         - 32_lulc.qmd
         - 33_roads.qmd
+        - 34_population.qmd
 
 bibliography: references.bib
 

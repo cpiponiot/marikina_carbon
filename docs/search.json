@@ -227,10 +227,21 @@
     "href": "33_roads.html",
     "title": "Distance to roads",
     "section": "",
-    "text": "Code\nlibrary(terra)\nlibrary(sf)\nlibrary(osmdata)\nlibrary(ggplot2)\n\n\nDistance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds.\n\n\nCode\n# get bounding box in the right format\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt; st_transform(crs = \"EPSG:4326\")\numrbpl_bb &lt;- area %&gt;% ext() %&gt;% matrix(ncol=2, byrow = TRUE)\nrownames(umrbpl_bb) &lt;- c(\"x\", \"y\")\ncolnames(umrbpl_bb) &lt;- c(\"min\", \"max\")\n\n# download road network from OSM\nroads_all &lt;- umrbpl_bb %&gt;%\n  opq() %&gt;%\n  add_osm_feature(key = \"highway\") %&gt;% \n  osmdata_sf()\nroads_all$osm_lines &lt;- subset(roads_all$osm_lines, highway != \"residential\")\n\ntemplate_raster &lt;- rast(\"data/srtm/topo_variables.tif\")[[1]]\ndist_to_roads &lt;- distance(template_raster, roads$osm_lines)\nif (!dir.exists(\"data/osm\")) dir.create(\"data/osm\")\nwriteRaster(dist_to_roads, \"data/osm/dist_to_road.tif\")\n\n\n\n\nCode\n\"data/osm/dist_to_road.tif\" |&gt; rast() |&gt; plot()",
+    "text": "Code\nlibrary(terra)\nlibrary(sf)\nlibrary(osmdata)\nlibrary(ggplot2)\n\n\nDistance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds.\n\n\nCode\n# get bounding box in the right format\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\numrbpl_bb &lt;- area |&gt;\n  ext() |&gt;\n  matrix(ncol = 2, byrow = TRUE)\nrownames(umrbpl_bb) &lt;- c(\"x\", \"y\")\ncolnames(umrbpl_bb) &lt;- c(\"min\", \"max\")\n\n# download road network from OSM\nroads_all &lt;- umrbpl_bb  |&gt;\n  opq()  |&gt;\n  add_osm_feature(key = \"highway\") |&gt;\n  osmdata_sf()\nroads_all$osm_lines &lt;- subset(roads_all$osm_lines, highway != \"residential\")\n\ntemplate_raster &lt;- rast(\"data/srtm/topo_variables.tif\")[[1]]\ndist_to_roads &lt;- distance(template_raster, roads$osm_lines)\nif (!dir.exists(\"data/osm\")) dir.create(\"data/osm\")\nwriteRaster(dist_to_roads, \"data/osm/dist_to_road.tif\")\n\n\n\n\nCode\n\"data/osm/dist_to_road.tif\" |&gt;\n  rast() |&gt;\n  plot()",
     "crumbs": [
       "Socioeconomic variables",
       "Distance to roads"
+    ]
+  },
+  {
+    "objectID": "34_population.html",
+    "href": "34_population.html",
+    "title": "Population density",
+    "section": "",
+    "text": "Code\nlibrary(terra)\nlibrary(sf)\nlibrary(osmdata)\nlibrary(ggplot2)\nlibrary(tidyterra)\n\n\n\n\nCode\n# download file from GHS database\nif (!dir.exists(\"data/ghsl\")) dir.create(\"data/ghsl\")\nfile &lt;- \"GHS_POP_E2020_GLOBE_R2023A_4326_3ss_V1_0_R8_C31\"\npaste0(\"https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/\",\n       \"GHS_POP_GLOBE_R2023A/GHS_POP_E2020_GLOBE_R2023A_4326_3ss/V1-0/tiles/\",\n       file, \".zip\") |&gt; \n  download.file(paste0(\"data/ghsl/\", file, \".zip\"), method = \"curl\")\nunzip(paste0(\"data/ghsl/\", file, \".zip\"), exdir = \"data/ghsl\")\n\n# crop map\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt; st_transform(crs = \"EPSG:4326\")\npop &lt;- paste0(\"data/ghsl/\", file, \".tif\") |&gt; rast() |&gt; \n  crop(area)\nwriteRaster(pop, file = \"data/ghsl/population_umrbpl.tif\")\n\n\n\n\nCode\npop &lt;- rast(\"data/ghsl/population_umrbpl.tif\")\nggplot() +\n  geom_spatraster(data = pop) +\n  scale_fill_viridis_c(trans = \"log10\")",
+    "crumbs": [
+      "Socioeconomic variables",
+      "Population density"
     ]
   }
 ]
