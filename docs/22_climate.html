@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-01-07">
 
-<title>Changes in forest cover and carbon density in the Upper Marikina RBPL</title>
+<title>Climate variables – Changes in forest cover and carbon density in the Upper Marikina RBPL</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -21,7 +20,62 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -31,7 +85,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./10_forest_metrics.html" rel="next">
+<link href="./30_socioeco.html" rel="next">
+<link href="./21_topography.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -82,7 +137,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Introduction</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./20_environment.html">Environmental variables</a></li><li class="breadcrumb-item"><a href="./22_climate.html">Climate variables</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -109,7 +164,7 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Introduction</span></a>
   </div>
 </li>
@@ -153,7 +208,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./22_climate.html" class="sidebar-item-text sidebar-link">
+  <a href="./22_climate.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Climate variables</span></a>
   </div>
 </li>
@@ -193,27 +248,15 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
-   
-  <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
-  <ul class="collapse">
-  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a></li>
-  <li><a href="#project" id="toc-project" class="nav-link" data-scroll-target="#project">Project</a></li>
-  <li><a href="#contribution" id="toc-contribution" class="nav-link" data-scroll-target="#contribution">Contribution</a></li>
-  <li><a href="#help" id="toc-help" class="nav-link" data-scroll-target="#help">Help</a></li>
-  </ul></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./20_environment.html">Environmental variables</a></li><li class="breadcrumb-item"><a href="./22_climate.html">Climate variables</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Changes in forest cover and carbon density in the Upper Marikina RBPL</h1>
+<h1 class="title">Climate variables</h1>
 </div>
 
 
@@ -221,12 +264,6 @@ ul.task-list li input[type="checkbox"] {
 <div class="quarto-title-meta">
 
     
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">January 7, 2026</p>
-    </div>
-  </div>
   
     
   </div>
@@ -236,43 +273,64 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p><a href="#0"><img src="https://www.repostatus.org/badges/latest/wip.svg" class="img-fluid"></a> <a href="https://github.com/cpiponiot/marikina_carbon/actions?query=workflow%3Alint"><img src="https://github.com/cpiponiot/marikina_carbon/workflows/lint/badge.svg" class="img-fluid" alt="lint"></a></p>
-<section id="introduction" class="level1 unnumbered">
-<h1 class="unnumbered">Introduction</h1>
-<p><strong>marikina_carbon</strong> explores changes in forest cover and carbon density in the Upper Marikina River Basin Protected Landscape (UMRBPL). The project also compiles a dataset of spatially explicit independent variables used to model changes in aboveground carbon distribution in the UMRBPL.</p>
-<section id="usage" class="level2">
-<h2 class="anchored" data-anchor-id="usage">Usage</h2>
-<p>All <strong>marikina_carbon</strong> analyses rely on the quarto documents (<code>files.qmd</code>) that can be run with R and associated environment defined with <a href="#0">renv</a>.</p>
-</section>
-<section id="project" class="level2">
-<h2 class="anchored" data-anchor-id="project">Project</h2>
-<p><strong>marikina_carbon</strong> includes:</p>
-<ul>
-<li>Analyse of the data with associated documentation and figures:
-<ul>
-<li>Reproducible analyses in <code>files.qmd</code></li>
-<li>Resulting pages in <code>docs/</code></li>
-<li>Document structure definition in <code>_quarto.yml</code></li>
-</ul></li>
-<li>Data in <code>data/</code></li>
-<li>R scripts with functions in <code>r/</code></li>
-<li>R environment definition with <a href="https://rstudio.github.io/renv/articles/renv.html">renv</a> in <code>renv/</code> and <code>renv/lock</code></li>
-<li>R files (<code>.Rbuildignore</code> , <code>.Rdata</code> , <code>.Rprofile</code> , <code>.Rhistory</code>, <code>.lintr</code>)</li>
-<li>Git and GitHub files (<code>.gitignore</code> , <code>.github/</code>)</li>
-<li>Project documentation (<code>README.qmd</code> , <code>README.md</code> , <code>NEWS.md</code>, <code>LICENSE</code> )</li>
-</ul>
-</section>
-<section id="contribution" class="level2">
-<h2 class="anchored" data-anchor-id="contribution">Contribution</h2>
-<p>You can contribute to the project by forking the repository on github and cloning the fork to your machine using several options, including GitHub desktop GUI.</p>
-</section>
-<section id="help" class="level2">
-<h2 class="anchored" data-anchor-id="help">Help</h2>
-<p>Please create an issue on GitHub for any questions, bugs or help needed regarding <strong>marikina_carbon</strong>: <a href="https://github.com/cpiponiot/marikina_carbon/issues" class="uri">https://github.com/cpiponiot/marikina_carbon/issues</a>.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Climate data were obtained from the CHELSA-Bioclim v2.1 database at a spatial resolution of 1 km <span class="citation" data-cites="Brun2022">(<a href="#ref-Brun2022" role="doc-biblioref">Brun et al. 2022</a>)</span>. We extracted mean annual temperature (BIO1, in °C) and mean annual precipitation (BIO12, in mm/year), both calculated as long-term averages over the 1981–2010 reference period.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>area <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/umrbpl/"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>, <span class="at">pattern =</span> <span class="st">"shp$"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_sf</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">require</span>(Rchelsa)) {</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  remotes<span class="sc">::</span><span class="fu">install_git</span>(<span class="st">"https://gitlabext.wsl.ch/karger/rchelsa.git"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(Rchelsa)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>clim <span class="ot">&lt;-</span> <span class="fu">lapply</span>(</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">"bio01"</span>, <span class="st">"bio12"</span>),</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(rs) {</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">getChelsa</span>(</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>      rs,</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">extent =</span> <span class="fu">ext</span>(area),</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">date =</span> <span class="st">"1981-2010"</span>, <span class="at">dataset =</span> <span class="st">"chelsa-bioclim"</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>()</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(clim) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"mean_temperature"</span>, <span class="st">"mean_precipitation"</span>)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(<span class="st">"data/chelsa"</span>)) <span class="fu">dir.create</span>(<span class="st">"data/chelsa"</span>)</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(clim, <span class="at">file =</span> <span class="st">"data/chelsa/climate_variables.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="st">"data/chelsa/climate_variables.tif"</span> <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>() <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="22_climate_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 
 
-</section>
-</section>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-Brun2022" class="csl-entry" role="listitem">
+Brun, P., N. E. Zimmermann, C. Hari, L. Pellissier, and D. N. Karger. 2022. <span>“<span class="nocase">CHELSA-BIOCLIM+ A novel set of global climate-related predictors at kilometre-resolution</span>.”</span> https://doi.org/<a href="https://www.doi.org/10.16904/envidat.332">https://www.doi.org/10.16904/envidat.332</a>.
+</div>
+</div>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -676,10 +734,13 @@ ul.task-list li input[type="checkbox"] {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="./21_topography.html" class="pagination-link" aria-label="Topographic variables">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Topographic variables</span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./10_forest_metrics.html" class="pagination-link" aria-label="Forest metrics">
-        <span class="nav-page-text">Forest metrics</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./30_socioeco.html" class="pagination-link" aria-label="Socioeconomic variables">
+        <span class="nav-page-text">Socioeconomic variables</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

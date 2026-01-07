@@ -1,0 +1,50 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(terra)
+library(sf)
+library(osmdata)
+library(ggplot2)
+```
+
+# Distance to roads {.unnumbered}
+
+Distance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds. 
+
+```{r}
+#| message: false
+#| warning: false
+#| eval: false
+# get bounding box in the right format
+area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+  read_sf() |>
+  st_transform(crs = "EPSG:4326")
+umrbpl_bb <- area |>
+  ext() |>
+  matrix(ncol = 2, byrow = TRUE)
+rownames(umrbpl_bb) <- c("x", "y")
+colnames(umrbpl_bb) <- c("min", "max")
+
+# download road network from OSM
+roads_all <- umrbpl_bb  |>
+  opq()  |>
+  add_osm_feature(key = "highway") |>
+  osmdata_sf()
+roads_all$osm_lines <- subset(roads_all$osm_lines, highway != "residential")
+
+template_raster <- rast("data/srtm/topo_variables.tif")[[1]]
+dist_to_roads <- distance(template_raster, roads$osm_lines)
+if (!dir.exists("data/osm")) dir.create("data/osm")
+writeRaster(dist_to_roads, "data/osm/dist_to_road.tif")
+```
+
+```{r}
+#| message: false
+#| warning: false
+#| fig-width: 4
+#| fig-height: 8
+"data/osm/dist_to_road.tif" |>
+  rast() |>
+  plot()
+```
+

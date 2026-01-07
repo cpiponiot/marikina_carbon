@@ -38,7 +38,7 @@ if (!file.exists(paste0(dir_height, "/canopy_top_height_2020_umrbpl.tif"))) {
 ```{r}
 #| message: false
 #| warning: false
-tmf <- list.files("data/tmf", "AnnualChange", full.names = TRUE)[1:31] |>
+tmf <- list.files("data/tmf", "UMRBPL", full.names = TRUE)[1:31] |>
   rast() |>
   crop(area) |>
   mask(area)

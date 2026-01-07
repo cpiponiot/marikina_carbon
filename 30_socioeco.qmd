@@ -1,0 +1,8 @@
+```{r setup}
+#| message: false
+#| warning: false
+```
+
+# Socioeconomic variables {.unnumbered}
+
+We compiled a set of spatially explicit socioeconomic variables representing human influences on the spatial distribution of forest carbon stocks in the study area, including forest disturbance history, land-use and land-cover change, distance to roads, population density and administrative status.

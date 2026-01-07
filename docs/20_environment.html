@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-01-07">
 
-<title>Changes in forest cover and carbon density in the Upper Marikina RBPL</title>
+<title>Environmental variables – Changes in forest cover and carbon density in the Upper Marikina RBPL</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -21,7 +20,27 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -31,7 +50,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./10_forest_metrics.html" rel="next">
+<link href="./21_topography.html" rel="next">
+<link href="./12_cci_map.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -82,7 +102,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Introduction</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./20_environment.html">Environmental variables</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -109,7 +129,7 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Introduction</span></a>
   </div>
 </li>
@@ -138,7 +158,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="./20_environment.html" class="sidebar-item-text sidebar-link">
+            <a href="./20_environment.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Environmental variables</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -193,27 +213,15 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
-   
-  <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
-  <ul class="collapse">
-  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a></li>
-  <li><a href="#project" id="toc-project" class="nav-link" data-scroll-target="#project">Project</a></li>
-  <li><a href="#contribution" id="toc-contribution" class="nav-link" data-scroll-target="#contribution">Contribution</a></li>
-  <li><a href="#help" id="toc-help" class="nav-link" data-scroll-target="#help">Help</a></li>
-  </ul></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Changes in forest cover and carbon density in the Upper Marikina RBPL</h1>
+<h1 class="title">Environmental variables</h1>
 </div>
 
 
@@ -221,12 +229,6 @@ ul.task-list li input[type="checkbox"] {
 <div class="quarto-title-meta">
 
     
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">January 7, 2026</p>
-    </div>
-  </div>
   
     
   </div>
@@ -236,43 +238,17 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p><a href="#0"><img src="https://www.repostatus.org/badges/latest/wip.svg" class="img-fluid"></a> <a href="https://github.com/cpiponiot/marikina_carbon/actions?query=workflow%3Alint"><img src="https://github.com/cpiponiot/marikina_carbon/workflows/lint/badge.svg" class="img-fluid" alt="lint"></a></p>
-<section id="introduction" class="level1 unnumbered">
-<h1 class="unnumbered">Introduction</h1>
-<p><strong>marikina_carbon</strong> explores changes in forest cover and carbon density in the Upper Marikina River Basin Protected Landscape (UMRBPL). The project also compiles a dataset of spatially explicit independent variables used to model changes in aboveground carbon distribution in the UMRBPL.</p>
-<section id="usage" class="level2">
-<h2 class="anchored" data-anchor-id="usage">Usage</h2>
-<p>All <strong>marikina_carbon</strong> analyses rely on the quarto documents (<code>files.qmd</code>) that can be run with R and associated environment defined with <a href="#0">renv</a>.</p>
-</section>
-<section id="project" class="level2">
-<h2 class="anchored" data-anchor-id="project">Project</h2>
-<p><strong>marikina_carbon</strong> includes:</p>
-<ul>
-<li>Analyse of the data with associated documentation and figures:
-<ul>
-<li>Reproducible analyses in <code>files.qmd</code></li>
-<li>Resulting pages in <code>docs/</code></li>
-<li>Document structure definition in <code>_quarto.yml</code></li>
-</ul></li>
-<li>Data in <code>data/</code></li>
-<li>R scripts with functions in <code>r/</code></li>
-<li>R environment definition with <a href="https://rstudio.github.io/renv/articles/renv.html">renv</a> in <code>renv/</code> and <code>renv/lock</code></li>
-<li>R files (<code>.Rbuildignore</code> , <code>.Rdata</code> , <code>.Rprofile</code> , <code>.Rhistory</code>, <code>.lintr</code>)</li>
-<li>Git and GitHub files (<code>.gitignore</code> , <code>.github/</code>)</li>
-<li>Project documentation (<code>README.qmd</code> , <code>README.md</code> , <code>NEWS.md</code>, <code>LICENSE</code> )</li>
-</ul>
-</section>
-<section id="contribution" class="level2">
-<h2 class="anchored" data-anchor-id="contribution">Contribution</h2>
-<p>You can contribute to the project by forking the repository on github and cloning the fork to your machine using several options, including GitHub desktop GUI.</p>
-</section>
-<section id="help" class="level2">
-<h2 class="anchored" data-anchor-id="help">Help</h2>
-<p>Please create an issue on GitHub for any questions, bugs or help needed regarding <strong>marikina_carbon</strong>: <a href="https://github.com/cpiponiot/marikina_carbon/issues" class="uri">https://github.com/cpiponiot/marikina_carbon/issues</a>.</p>
+<p>Forest aboveground carbon stocks have been proven to be linked to environmental variables such as climate and soil characteristics <span class="citation" data-cites="Muller-Landau2020">(<a href="#ref-Muller-Landau2020" role="doc-biblioref">Muller-Landau et al. 2020</a>)</span>. Topography can impact soil properties and water availability and also plays a role in the distribution of carbon stocks <span class="citation" data-cites="Muscarella2020">(<a href="#ref-Muscarella2020" role="doc-biblioref">Muscarella et al. 2020</a>)</span>. Due to the variation of soil characteristics at fine spatial scales and the lack of local soil data, we do not expect global soil databases to provide much information about local soil characteristics. For this reason, we focus only on climate and topographic variables as predictors of aboveground carbon stocks.</p>
 
 
-</section>
-</section>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-Muller-Landau2020" class="csl-entry" role="listitem">
+Muller-Landau, Helene C., K. C. Cushman, Eva E. Arroyo, Isabel Martinez Cano, Kristina J. Anderson-Teixeira, Bogumila Backiel, Authors Helene C Muller-landau, et al. 2020. <span>“<span class="nocase">Patterns and mechanisms of spatial variation in tropical forest productivity, woody residence time, and biomass</span>.”</span> <em>New Physiologist</em>.
+</div>
+<div id="ref-Muscarella2020" class="csl-entry" role="listitem">
+Muscarella, Robert, Samira Kolyaie, Douglas C. Morton, Jess K. Zimmerman, and María Uriarte. 2020. <span>“<span class="nocase">Effects of topography on tropical forest structure depend on climate context</span>.”</span> Edited by Tommaso Jucker. <em>Journal of Ecology</em> 108 (1): 145–59. <a href="https://doi.org/10.1111/1365-2745.13261">https://doi.org/10.1111/1365-2745.13261</a>.
+</div>
+</div>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -676,10 +652,13 @@ ul.task-list li input[type="checkbox"] {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="./12_cci_map.html" class="pagination-link" aria-label="Biomass map from ESA-CCI">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Biomass map from ESA-CCI</span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./10_forest_metrics.html" class="pagination-link" aria-label="Forest metrics">
-        <span class="nav-page-text">Forest metrics</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./21_topography.html" class="pagination-link" aria-label="Topographic variables">
+        <span class="nav-page-text">Topographic variables</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

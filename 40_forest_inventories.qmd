@@ -1,0 +1,91 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(readxl)
+library(BIOMASS)
+library(dplyr)
+library(ggplot2)
+```
+
+# Forest inventory data {.unnumbered}
+
+## FRA 2013-2018
+
+```{r}
+# googledrive::read_sheet("1W2eiPuElzZ4t8EKizbNlJkmIyqEMlMK_B06_8a21YRM", "FRA 2013-2018")
+data_inv <-
+  read_excel("data/inventories/Carbon Stock and Sequestration Data.xlsx",
+    1,
+    range = "A2:J3485"
+  )
+```
+
+```{r}
+data_inv |>
+  ggplot(aes(DBH)) +
+  geom_histogram(aes(col = `Plot No.`))
+```
+
+```{r}
+data_inv |>
+  ggplot(aes(DBH, `Total Height`)) +
+  geom_point()
+data_inv |>
+  ggplot(aes(`Merch. Height`, `Total Height`)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1)
+```
+
+```{r}
+data_inv |>
+  mutate(agb = computeAGB(DBH, rep(0.6, nrow(data_inv)), `Total Height`)) |>
+  group_by(`Plot No.`) |>
+  summarise(agb = sum(agb, na.rm = TRUE))
+```
+
+## NGP
+
+```{r}
+data_ngp <- read_excel("data/inventories/Carbon Stock and Sequestration Data.xlsx",
+  4,
+  range = "A2:J371"
+)
+data_ngp <- data_ngp[-1, ]
+# fill in empty plot/site information
+for (i in seq_len(nrow(data_ngp))) {
+  if (is.na(data_ngp$Transect[i])) data_ngp$Transect[i] <- data_ngp$Transect[i - 1]
+  if (is.na(data_ngp$Plot[i])) {
+    data_ngp$Plot[i] <- data_ngp$Plot[i - 1]
+    data_ngp$Latitude[i] <- data_ngp$Latitude[i - 1]
+    data_ngp$Longitude[i] <- data_ngp$Longitude[i - 1]
+    data_ngp$Elevation[i] <- data_ngp$Elevation[i - 1]
+  }
+}
+```
+
+```{r}
+data_ngp |>
+  ggplot(aes(`DBH (cm)`)) +
+  geom_histogram()
+```
+
+```{r}
+data_ngp |>
+  ggplot(aes(`DBH (cm)`, Height)) +
+  geom_point() +
+  ylim(0, 31)
+```
+
+```{r}
+data_agb <- data_ngp |>
+  mutate(agb = computeAGB(`DBH (cm)`, rep(0.6, nrow(data_ngp)), Height)) |>
+  group_by(Plot, Transect) |>
+  summarise(agb = sum(agb, na.rm = TRUE) / (7^2 * 1e-4))
+data_agb |>
+  ggplot(aes(x = agb, fill = Transect)) +
+  geom_histogram() +
+  annotate(
+    geom = "text", x = 3000, y = 30,
+    label = paste("mean:", round(mean(data_agb$agb)), "Mg/ha")
+  )
+```

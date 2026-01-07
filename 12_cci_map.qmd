@@ -80,7 +80,7 @@ ggplot() +
 ```{r}
 #| message: false
 #| warning: false
-tmf <- list.files("data/tmf", "AnnualChange", full.names = TRUE) |>
+tmf <- list.files("data/tmf", "UMRBPL", full.names = TRUE) |>
   rast() |>
   crop(area) |>
   mask(area)

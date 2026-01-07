@@ -7,7 +7,7 @@ library(sf)
 
 # Climate variables {.unnumbered}
 
-Climate variables were downloaded from the CHELSA climate 2.1 database, at a 1-km resolution. 
+Climate data were obtained from the CHELSA-Bioclim v2.1 database at a spatial resolution of 1 km [@Brun2022]. We extracted mean annual temperature (BIO1, in °C) and mean annual precipitation (BIO12, in mm/year), both calculated as long-term averages over the 1981–2010 reference period.
 
 ```{r}
 #| message: false
@@ -37,7 +37,6 @@ names(clim) <- c("mean_temperature", "mean_precipitation")
 if (!dir.exists("data/chelsa")) dir.create("data/chelsa")
 writeRaster(clim, file = "data/chelsa/climate_variables.tif", overwrite = TRUE)
 ```
-
 
 ```{r}
 #| message: false

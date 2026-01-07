@@ -1,87 +1,10 @@
 [
   {
-    "objectID": "11_tmf.html",
-    "href": "11_tmf.html",
-    "title": "Tropical Moist Forests product",
-    "section": "",
-    "text": "Maps\nThis product, developed by the European Commission’s Joint Research Centre, classifies forest areas and detects annual changes, including deforestation and forest degradation. Based on Landsat images, it provides data from 1990 to 2024 at a resolution of 30 metres.\nCode\nplot(c(\n  tmf[[which(grepl(2010, names(tmf)))]],\n  tmf[[which(grepl(2024, names(tmf)))]]\n), col = c(\"darkgreen\", \"orange\", \"red\", \"green\", \"lightblue\", \"grey\"))",
-    "crumbs": [
-      "Forest cover",
-      "Tropical Moist Forests product"
-    ]
-  },
-  {
-    "objectID": "11_tmf.html#graphs",
-    "href": "11_tmf.html#graphs",
-    "title": "Tropical Moist Forests product",
-    "section": "Graphs",
-    "text": "Graphs\n\n\nCode\nggplot(data, aes(x=year)) + \n  geom_line(aes(y = Degraded, color = \"Degraded\"), size = 0.9) + \n  geom_line(aes(y = Deforested, color=\"Deforested\"), size = 0.9)+\n  geom_line(aes(y = Regrowth, color=\"Regrowth\"), size = 0.9)+\n  scale_color_manual(name = \"\", values = c(\n    \"Degraded\" = \"orange\", \n    \"Deforested\" = \"red\", \n    \"Regrowth\" = \"green\"\n  )) +\n  labs(title = \"TMF changes from 1990 to 2024\", x = \"Year\",  y = \"Surface (Ha)\")",
-    "crumbs": [
-      "Forest cover",
-      "Tropical Moist Forests product"
-    ]
-  },
-  {
-    "objectID": "11_tmf.html#changes-in-forest-area-between-1990-and-2024",
-    "href": "11_tmf.html#changes-in-forest-area-between-1990-and-2024",
-    "title": "Tropical Moist Forests product",
-    "section": "Changes in forest area between 1990 and 2024",
-    "text": "Changes in forest area between 1990 and 2024\n\n\nCode\nggplot(data, aes(x = year)) +\n  geom_line(aes(y = Degraded, color = \"Degraded\"), size = 0.9) +\n  geom_line(aes(y = Deforested, color = \"Deforested\"), size = 0.9) +\n  geom_line(aes(y = Regrowth, color = \"Regrowth\"), size = 0.9) +\n  scale_color_manual(name = \"\", values = c(\n    \"Degraded\" = \"orange\",\n    \"Deforested\" = \"red\",\n    \"Regrowth\" = \"green\"\n  )) +\n  labs(title = \"TMF changes from 1990 to 2024\", x = \"Year\", y = \"Surface (Ha)\")",
-    "crumbs": [
-      "Forest cover",
-      "Tropical Moist Forests product"
-    ]
-  },
-  {
-    "objectID": "21_tree_height.html",
-    "href": "21_tree_height.html",
-    "title": "Tree height",
-    "section": "",
-    "text": "Data\nThis dataset was downloaded from Lang, N., Rodríguez, A. C., Schindler, K., & Wegner, J. D. (2021). Canopy top height and indicative high carbon stock maps for Indonesia, Malaysia, and Philippines (Version 1.0) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.5012448\nTree height was estimated by combining Sentinel-2 optical satellite images and GEDI lidar data, using a deep convolutional neural network.\nCode\ndir_height &lt;- \"data/tree_height\"\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\nif (!dir.exists(dir_height)) dir.create(dir_height)\nif (!file.exists(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))) {\n  zen4R::download_zenodo(\n    \"10.5281/zenodo.5012447\", dir_height,\n    \"canopy_top_height_2020_philippines.tif\"\n  )\n  paste0(dir_height, \"/canopy_top_height_2020_philippines.tif\") |&gt;\n    rast() |&gt;\n    crop(area) |&gt;\n    mask(area) |&gt;\n    writeRaster(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))\n}\nCode\ntmf &lt;- list.files(\"data/tmf\", \"AnnualChange\", full.names = TRUE)[1:31] |&gt;\n  rast() |&gt;\n  crop(area) |&gt;\n  mask(area)\nheight &lt;- rast(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\")) |&gt;\n  resample(tmf, method = \"average\")\n# age of secondary forests in 2020\ntmf_sec_age &lt;- mask(x = tmf, ifel(tmf[[31]] == 4, 1, NA)) |&gt;\n  app(\\(x) {\n    if (any(!is.na(x) & x != 4)) {\n      length(x) - max(which(x != 4))\n    } else {\n      NA\n    }\n  })\n# previous land use\ntmf_sec_prev &lt;- mask(x = tmf, ifel(tmf[[31]] == 4, 1, NA)) |&gt;\n  app(\\(x) {\n    if (any(!is.na(x) & x != 4)) {\n      x[max(which(x != 4))]\n    } else {\n      NA\n    }\n  })\n# create complete dataframe\ndf_height &lt;- c(tmf[[31]], height, tmf_sec_age, tmf_sec_prev) |&gt;\n  as.data.frame() |&gt;\n  subset(!is.na(Dec2020))\ncolnames(df_height) &lt;- c(\"class\", \"height\", \"sec_age\", \"sec_prev\")\ndf_height$class &lt;- factor(df_height$class)\nlevels(df_height$class) &lt;- c(\n  \"Undisturbed\", \"Degraded\", \"Deforested\",\n  \"Regrowth\", \"Water\", \"Other\"\n)",
-    "crumbs": [
-      "Carbon density",
-      "Tree height"
-    ]
-  },
-  {
-    "objectID": "21_tree_height.html#comparison-with-tmf",
-    "href": "21_tree_height.html#comparison-with-tmf",
-    "title": "Tree height",
-    "section": "Comparison with TMF",
-    "text": "Comparison with TMF\n\n\nCode\ntmf &lt;- rast(\"data/tmf/JRC_TMF_AnnualChange_v1_2020_ASI_ID76_N20_E120.tif\") |&gt;\n  crop(area) |&gt; mask(area) |&gt; \n  resample(height, method = \"near\")\ntypes &lt;- c(\"Undisturbed\", \"Degraded\", \"Deforested\",\"Regrowth\", \"Water\", \"Other\")\nheight_type &lt;- lapply(1:6, function(i) {\n  x &lt;- ifel(tmf == i, 1, NA) |&gt; mask(x = height)\n  return(data.frame(type = types[i], value = x[!is.na(x)]))\n}) |&gt; do.call(what = rbind)\n\n\n\n\nCode\nggplot(height_type) + \n  geom_boxplot(aes(x = type, y = canopy_top_height_2020_philippines))+\n  labs(x = NULL, y = \"Canopy height (m)\")",
-    "crumbs": [
-      "Carbon density",
-      "Tree height"
-    ]
-  },
-  {
-    "objectID": "21_tree_height.html#distribution-of-canopy-height-by-tmf-class",
-    "href": "21_tree_height.html#distribution-of-canopy-height-by-tmf-class",
-    "title": "Tree height",
-    "section": "Distribution of canopy height by TMF class",
-    "text": "Distribution of canopy height by TMF class\n\n\nCode\ndf_height |&gt;\n  ggplot() +\n  geom_boxplot(aes(x = class, y = height)) +\n  labs(x = NULL, y = \"Canopy height (m)\")",
-    "crumbs": [
-      "Carbon density",
-      "Tree height"
-    ]
-  },
-  {
-    "objectID": "21_tree_height.html#canopy-height-changes-with-tmf-secondary-forest-age",
-    "href": "21_tree_height.html#canopy-height-changes-with-tmf-secondary-forest-age",
-    "title": "Tree height",
-    "section": "Canopy height changes with TMF secondary forest age",
-    "text": "Canopy height changes with TMF secondary forest age\n\n\nCode\ndf_height |&gt;\n  subset(!is.na(sec_age)) |&gt;\n  ggplot() +\n  geom_histogram(aes(x = sec_age)) +\n  labs(x = \"Secondary forest age in 2020 (yr)\")\n\n\n\n\n\n\n\n\n\n\n\nCode\ndf_height |&gt;\n  subset(!is.na(sec_age)) |&gt;\n  ggplot(aes(sec_age, height)) +\n  geom_point() +\n  geom_smooth()",
-    "crumbs": [
-      "Carbon density",
-      "Tree height"
-    ]
-  },
-  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Changes in forest cover and carbon density in the Upper Marikina RBPL",
     "section": "",
-    "text": "Introduction\nmarikina_carbon explores the changes in forest cover and forest carbon density in the Upper Marikina River Basin Protected Landscape.",
+    "text": "Introduction\nmarikina_carbon explores changes in forest cover and carbon density in the Upper Marikina River Basin Protected Landscape (UMRBPL). The project also compiles a dataset of spatially explicit independent variables used to model changes in aboveground carbon distribution in the UMRBPL.",
     "crumbs": [
       "Introduction"
     ]
@@ -127,80 +50,187 @@
     ]
   },
   {
-    "objectID": "12_lulc.html",
-    "href": "12_lulc.html",
-    "title": "Phlippines LULC data",
+    "objectID": "10_forest_metrics.html",
+    "href": "10_forest_metrics.html",
+    "title": "Forest metrics",
     "section": "",
-    "text": "Temporal trends\nCode\ndf_lulc &lt;- as.data.frame(lulc, xy = TRUE)\nnames(df_lulc) &lt;- \n  c(\"lon\", \"lat\", \"LC1988\", \"LC2003\", \"AGG14\", \"AGG12\", \"CLASS_NAME\")\ndf_lulc |&gt; \n  setDT() |&gt; melt(id.vars = c(\"lon\", \"lat\")) |&gt; \n  ggplot(aes(lon, lat, fill=value)) +\n  geom_raster() + \n  scale_fill_manual(values = c(\"chartreuse4\", \"chartreuse2\", \"grey\", \"gold\")) +\n  facet_wrap(~variable) +\n  coord_equal() +\n  theme_classic() +\n  labs(x=NULL, y=NULL, fill=NULL) +\n  theme(legend.position = c(0.85, 0.2))\nCode\nfiles &lt;- list.files(\"data/LULC\", recursive = TRUE, \"shp\")\nyears &lt;- data.frame(\n  layer = seq_len(length(files)), \n  year = as.numeric(substr(files, 1, 4))\n)\nfreq(lulc) |&gt; \n  mutate(area = count*0.09) |&gt; \n  left_join(years) |&gt; \n  ggplot(aes(year, area, col=value)) +\n  geom_line() +\n  scale_color_manual(values = c(\"chartreuse4\", \"chartreuse2\", \"grey\", \"gold\")) +\n  theme_classic() +\n  labs(x=\"Year\", y=\"Area [ha]\", col=NULL)",
+    "text": "In this section, we extract various forest metrics derived from satellite and other remote sensing products. We then compare these maps to carbon density values derived from ground-based measurements in the Upper Marikina area.",
     "crumbs": [
-      "Forest cover",
-      "Phlippines LULC data"
+      "Forest metrics"
     ]
   },
   {
-    "objectID": "12_lulc.html#comparison-with-tmf",
-    "href": "12_lulc.html#comparison-with-tmf",
-    "title": "Phlippines LULC data",
-    "section": "Comparison with TMF",
-    "text": "Comparison with TMF\n\n\nCode\nlevels(tmf2020) &lt;- data.frame(\n  value = 0:6, \n  category = c(NA, \"Undisturbed Forest\", \"Degraded Forest\", \"Deforested\", \n                \"Regrowing Forest\", \"Water\", \"Other\"))\n\nas.data.frame(c(tmf2020, lulc[[5]])) |&gt;\n  select(LC, category) |&gt; table() |&gt; kable()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nUndisturbed Forest\nDegraded Forest\nDeforested\nRegrowing Forest\nWater\nOther\n\n\n\n\nClosed Forest\n25515\n253\n4\n23\n0\n3\n\n\nOpen Forest\n39846\n5957\n873\n2188\n0\n829\n\n\nOther\n668\n2240\n4453\n12158\n33\n55434\n\n\nShrubs\n5275\n15854\n12885\n47470\n1\n69921\n\n\n\n\n\nCode\nas.data.frame(c(tmf2020, lulc[[5]]), xy = TRUE) |&gt;\n  filter(!is.na(LC)) |&gt; \n  ggplot(aes(x,y, fill=category)) +\n  geom_raster() +\n  coord_equal() +\n  theme_classic() +\n  facet_wrap(~LC) +\n  labs(x=NULL, y=NULL,fill=NULL)",
+    "objectID": "11_tree_height.html",
+    "href": "11_tree_height.html",
+    "title": "Tree height",
+    "section": "",
+    "text": "Data\nThis dataset was downloaded from Lang, N., Rodríguez, A. C., Schindler, K., & Wegner, J. D. (2021). Canopy top height and indicative high carbon stock maps for Indonesia, Malaysia, and Philippines (Version 1.0) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.5012448\nTree height was estimated by combining Sentinel-2 optical satellite images and GEDI lidar data, using a deep convolutional neural network.\nCode\ndir_height &lt;- \"data/tree_height\"\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\nif (!dir.exists(dir_height)) dir.create(dir_height)\nif (!file.exists(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))) {\n  zen4R::download_zenodo(\n    \"10.5281/zenodo.5012447\", dir_height,\n    \"canopy_top_height_2020_philippines.tif\"\n  )\n  paste0(dir_height, \"/canopy_top_height_2020_philippines.tif\") |&gt;\n    rast() |&gt;\n    crop(area) |&gt;\n    mask(area) |&gt;\n    writeRaster(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\"))\n}\nCode\ntmf &lt;- list.files(\"data/tmf\", \"UMRBPL\", full.names = TRUE)[1:31] |&gt;\n  rast() |&gt;\n  crop(area) |&gt;\n  mask(area)\nheight &lt;- rast(paste0(dir_height, \"/canopy_top_height_2020_umrbpl.tif\")) |&gt;\n  resample(tmf, method = \"average\")\n# age of secondary forests in 2020\ntmf_sec_age &lt;- mask(x = tmf, ifel(tmf[[31]] == 4, 1, NA)) |&gt;\n  app(\\(x) {\n    if (any(!is.na(x) & x != 4)) {\n      length(x) - max(which(x != 4))\n    } else {\n      NA\n    }\n  })\n# previous land use\ntmf_sec_prev &lt;- mask(x = tmf, ifel(tmf[[31]] == 4, 1, NA)) |&gt;\n  app(\\(x) {\n    if (any(!is.na(x) & x != 4)) {\n      x[max(which(x != 4))]\n    } else {\n      NA\n    }\n  })\n# create complete dataframe\ndf_height &lt;- c(tmf[[31]], height, tmf_sec_age, tmf_sec_prev) |&gt;\n  as.data.frame() |&gt;\n  subset(!is.na(Dec2020))\ncolnames(df_height) &lt;- c(\"class\", \"height\", \"sec_age\", \"sec_prev\")\ndf_height$class &lt;- factor(df_height$class)\nlevels(df_height$class) &lt;- c(\n  \"Undisturbed\", \"Degraded\", \"Deforested\",\n  \"Regrowth\", \"Water\", \"Other\"\n)",
     "crumbs": [
-      "Forest cover",
-      "Phlippines LULC data"
+      "Forest metrics",
+      "Tree height"
     ]
   },
   {
-    "objectID": "22_cci_map.html",
-    "href": "22_cci_map.html",
+    "objectID": "11_tree_height.html#distribution-of-canopy-height-by-tmf-class",
+    "href": "11_tree_height.html#distribution-of-canopy-height-by-tmf-class",
+    "title": "Tree height",
+    "section": "Distribution of canopy height by TMF class",
+    "text": "Distribution of canopy height by TMF class\n\n\nCode\ndf_height |&gt;\n  ggplot() +\n  geom_boxplot(aes(x = class, y = height)) +\n  labs(x = NULL, y = \"Canopy height (m)\")",
+    "crumbs": [
+      "Forest metrics",
+      "Tree height"
+    ]
+  },
+  {
+    "objectID": "11_tree_height.html#canopy-height-changes-with-tmf-secondary-forest-age",
+    "href": "11_tree_height.html#canopy-height-changes-with-tmf-secondary-forest-age",
+    "title": "Tree height",
+    "section": "Canopy height changes with TMF secondary forest age",
+    "text": "Canopy height changes with TMF secondary forest age\n\n\nCode\ndf_height |&gt;\n  subset(!is.na(sec_age)) |&gt;\n  ggplot() +\n  geom_histogram(aes(x = sec_age)) +\n  labs(x = \"Secondary forest age in 2020 (yr)\")\n\n\n\n\n\n\n\n\n\n\n\nCode\ndf_height |&gt;\n  subset(!is.na(sec_age)) |&gt;\n  ggplot(aes(sec_age, height)) +\n  geom_point() +\n  geom_smooth()",
+    "crumbs": [
+      "Forest metrics",
+      "Tree height"
+    ]
+  },
+  {
+    "objectID": "12_cci_map.html",
+    "href": "12_cci_map.html",
     "title": "Biomass map from ESA-CCI",
     "section": "",
-    "text": "Data\nThe maps are 100-meter resolution, global aboveground biomass maps produced by the European Space Agency’s (ESA) Climate Change Initiative (CCI). These products are based on data from the ESA’s C-band (Sentinel-1A and -1B) and the JAXA’s L-band Synthetic Aperture Radar (ALOS-2 PALSAR-2), as well as additional information from spaceborne lidar (e.g., NASA’s Global Ecosystem Dynamics Investigation Lidar, or GEDI).\nAccording to their validation protocol, they have a substantial validation dataset in the Philippines.\nCode\nif(!dir.exists(\"data/CCI\")) dir.create(\"data/CCI\")\nu0 &lt;- \"https://dap.ceda.ac.uk/neodc/esacci/biomass/data/agb/maps/v6.0/geotiff/\" \nfor (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {\n  for (var in c(\"AGB\", \"AGB_SD\")) {\n    url1 &lt;- paste0(u0, year, \"/N20E120_ESACCI-BIOMASS-L4-\", var, \n                   \"-MERGED-100m-\", year, \"-fv6.0.tif?download=1\")\n    path1 &lt;- paste0(\"data/CCI/N20E120_ESACCI-BIOMASS-L4-\", var, \n                   \"-MERGED-100m-\", year, \"-fv6.0.tiff\")\n    file1 &lt;- paste0(\"data/CCI/umrbpl_ESACCI-BIOMASS-L4-\", var, \n                   \"-MERGED-100m-\", year, \"-fv6.0.tiff\")\n    if (!file.exists(file1)) {\n      download.file(url1, path1, method = \"curl\")\n      path1 |&gt; rast() |&gt; crop(ext(121, 121.4, 14.5, 14.9)) |&gt; writeRaster(file1)\n      file.remove(path1)\n    }}}\n  \narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\nagb &lt;- list.files(\"data/CCI/\", full.names = TRUE) |&gt; \n  grep(pattern = \"AGB-\", value = TRUE) |&gt; \n  rast() |&gt; crop(ext(area)) |&gt; mask(area) |&gt; \n  tidyterra::rename_with(~sapply(strsplit(.x, \"-\"), function(i) i[7]))\nuncertainty &lt;- list.files(\"data/CCI/\", full.names = TRUE) |&gt; \n  grep(pattern = \"AGB_SD\", value = TRUE) |&gt; \n  rast() |&gt; crop(ext(area)) |&gt; mask(area) |&gt; \n  tidyterra::rename_with(~sapply(strsplit(.x, \"-\"), function(i) i[7]))\n\nggplot() +\n  geom_spatraster(data = agb) +\n  facet_wrap(~lyr, nrow = 2) +\n  scale_fill_viridis_c(\"AGB\\n(Mg/ha)\")\n\n\n\n\n\n\n\n\n\nCode\nggplot() +\n  geom_spatraster(data = uncertainty/agb*100) +\n  facet_wrap(~lyr, nrow = 2) +\n  scale_fill_viridis_c(\"Coefficient of variation (%)\", option = \"magma\")",
+    "text": "Data\nThe maps are 100-meter resolution, global aboveground biomass maps produced by the European Space Agency’s (ESA) Climate Change Initiative (CCI). These products are based on data from the ESA’s C-band (Sentinel-1A and -1B) and the JAXA’s L-band Synthetic Aperture Radar (ALOS-2 PALSAR-2), as well as additional information from spaceborne lidar (e.g., NASA’s Global Ecosystem Dynamics Investigation Lidar, or GEDI).\nAccording to their validation protocol, they have a substantial validation dataset in the Philippines.\nCode\nif (!dir.exists(\"data/CCI\")) dir.create(\"data/CCI\")\nu0 &lt;- \"https://dap.ceda.ac.uk/neodc/esacci/biomass/data/agb/maps/v6.0/geotiff/\"\nfor (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {\n  for (var in c(\"AGB\", \"AGB_SD\")) {\n    url1 &lt;- paste0(\n      u0, year, \"/N20E120_ESACCI-BIOMASS-L4-\", var,\n      \"-MERGED-100m-\", year, \"-fv6.0.tif?download=1\"\n    )\n    path1 &lt;- paste0(\n      \"data/CCI/N20E120_ESACCI-BIOMASS-L4-\", var,\n      \"-MERGED-100m-\", year, \"-fv6.0.tiff\"\n    )\n    file1 &lt;- paste0(\n      \"data/CCI/umrbpl_ESACCI-BIOMASS-L4-\", var,\n      \"-MERGED-100m-\", year, \"-fv6.0.tiff\"\n    )\n    if (!file.exists(file1)) {\n      download.file(url1, path1, method = \"curl\")\n      path1 |&gt;\n        rast() |&gt;\n        crop(ext(121, 121.4, 14.5, 14.9)) |&gt;\n        writeRaster(file1)\n      file.remove(path1)\n    }\n  }\n}\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\nagb &lt;- list.files(\"data/CCI/\", full.names = TRUE) |&gt;\n  grep(pattern = \"AGB-\", value = TRUE) |&gt;\n  rast() |&gt;\n  crop(ext(area)) |&gt;\n  mask(area) |&gt;\n  tidyterra::rename_with(~ sapply(strsplit(.x, \"-\"), function(i) i[7]))\nuncertainty &lt;- list.files(\"data/CCI/\", full.names = TRUE) |&gt;\n  grep(pattern = \"AGB_SD\", value = TRUE) |&gt;\n  rast() |&gt;\n  crop(ext(area)) |&gt;\n  mask(area) |&gt;\n  tidyterra::rename_with(~ sapply(strsplit(.x, \"-\"), function(i) i[7]))\n\nggplot() +\n  geom_spatraster(data = agb) +\n  facet_wrap(~lyr, nrow = 2) +\n  scale_fill_viridis_c(\"AGB\\n(Mg/ha)\")\n\n\n\n\n\n\n\n\n\nCode\nggplot() +\n  geom_spatraster(data = uncertainty / agb * 100) +\n  facet_wrap(~lyr, nrow = 2) +\n  scale_fill_viridis_c(\"Coefficient of variation (%)\", option = \"magma\")",
     "crumbs": [
-      "Carbon density",
+      "Forest metrics",
       "Biomass map from ESA-CCI"
     ]
   },
   {
-    "objectID": "22_cci_map.html#distribution-of-agb-by-tmf-class",
-    "href": "22_cci_map.html#distribution-of-agb-by-tmf-class",
+    "objectID": "12_cci_map.html#distribution-of-agb-by-tmf-class",
+    "href": "12_cci_map.html#distribution-of-agb-by-tmf-class",
     "title": "Biomass map from ESA-CCI",
     "section": "Distribution of AGB by TMF class",
-    "text": "Distribution of AGB by TMF class\n\n\nCode\ntmf &lt;- list.files(\"data/tmf\", \"AnnualChange\", full.names = TRUE) |&gt;\n  rast() |&gt; crop(area) |&gt;  mask(area)\nagb &lt;- resample(agb, tmf, method = \"average\")\n\ndf_tmf &lt;- as.data.frame(tmf, xy = TRUE) |&gt; \n  pivot_longer(cols = matches(\"19|20\"), names_to = \"year\", values_to = \"class\") |&gt; \n  mutate(year = gsub(\"Dec\", \"\", year)) |&gt; \n  filter(class != 0)\ndf_tmf$class &lt;- factor(df_tmf$class)\nlevels(df_tmf$class) &lt;- c(\n  \"Undisturbed\", \"Degraded\", \"Deforested\",\n  \"Regrowth\", \"Water\", \"Other\"\n)\ndf_agb &lt;- as.data.frame(agb, xy = TRUE) |&gt; \n  pivot_longer(cols = contains(\"20\"), names_to = \"year\", values_to = \"agb\") |&gt;\n  inner_join(as.data.frame(cellSize(agb, unit = \"ha\"), xy = TRUE))\ndata_all &lt;- inner_join(df_agb, df_tmf)\n\nggplot(data_all) +\n  geom_violin(aes(x = class, y = agb, col = class))",
+    "text": "Distribution of AGB by TMF class\n\n\nCode\ntmf &lt;- list.files(\"data/tmf\", \"UMRBPL\", full.names = TRUE) |&gt;\n  rast() |&gt;\n  crop(area) |&gt;\n  mask(area)\nagb &lt;- resample(agb, tmf, method = \"average\")\n\ndf_tmf &lt;- as.data.frame(tmf, xy = TRUE) |&gt;\n  pivot_longer(\n    cols = matches(\"19|20\"),\n    names_to = \"year\", values_to = \"class\"\n  ) |&gt;\n  mutate(year = gsub(\"Dec\", \"\", year)) |&gt;\n  filter(class != 0)\ndf_tmf$class &lt;- factor(df_tmf$class)\nlevels(df_tmf$class) &lt;- c(\n  \"Undisturbed\", \"Degraded\", \"Deforested\",\n  \"Regrowth\", \"Water\", \"Other\"\n)\ndf_agb &lt;- as.data.frame(agb, xy = TRUE) |&gt;\n  pivot_longer(cols = contains(\"20\"), names_to = \"year\", values_to = \"agb\") |&gt;\n  inner_join(as.data.frame(cellSize(agb, unit = \"ha\"), xy = TRUE))\ndata_all &lt;- inner_join(df_agb, df_tmf)\n\nggplot(data_all) +\n  geom_violin(aes(x = class, y = agb, col = class))",
     "crumbs": [
-      "Carbon density",
+      "Forest metrics",
       "Biomass map from ESA-CCI"
     ]
   },
   {
-    "objectID": "22_cci_map.html#agb-by-secondary-forest-age-according-to-tmf",
-    "href": "22_cci_map.html#agb-by-secondary-forest-age-according-to-tmf",
-    "title": "Biomass map from ESA-CCI",
-    "section": "AGB by secondary forest age (according to TMF)",
-    "text": "AGB by secondary forest age (according to TMF)\n\n\nCode\ndf_age &lt;- lapply(unique(df_agb$year), function(yr) {\n  i &lt;- grep(yr, names(tmf))\n  tmf_sec_age &lt;- mask(x = tmf[[seq_len(i)]], ifel(tmf[[i]] == 4, 1, NA)) |&gt;\n  app(\\(x) {\n    if (any(!is.na(x) & x != 4)) {\n      length(x) - max(which(x != 4))\n    } else {\n      NA\n    }\n  })\n  as.data.frame(tmf_sec_age, xy = TRUE) |&gt; \n    rename(age = lyr.1) |&gt; \n    inner_join(filter(df_agb, year == yr))\n}) |&gt; bind_rows()\n  \nggplot(df_age, aes(x = age, y = agb)) +\n  geom_bin2d(bins = 40) +\n  geom_smooth() +\n  scale_fill_continuous(type = \"viridis\") +\n  theme_bw()",
-    "crumbs": [
-      "Carbon density",
-      "Biomass map from ESA-CCI"
-    ]
-  },
-  {
-    "objectID": "22_cci_map.html#agb-stocks-by-tmf-class-through-time",
-    "href": "22_cci_map.html#agb-stocks-by-tmf-class-through-time",
+    "objectID": "12_cci_map.html#agb-stocks-by-tmf-class-through-time",
+    "href": "12_cci_map.html#agb-stocks-by-tmf-class-through-time",
     "title": "Biomass map from ESA-CCI",
     "section": "AGB stocks by TMF class through time",
-    "text": "AGB stocks by TMF class through time\n\n\nCode\ndata_all |&gt; \n  group_by(class, year) |&gt; \n  summarise(agbtot = sum(agb*area)) |&gt;\n  ggplot(aes(fill=class, y=agbtot, x=as.numeric(year))) + \n    geom_bar(position=\"stack\", stat=\"identity\") +\n  labs(y = \"AGB (Mg/ha)\", x = \"Year\") +\n  scale_fill_manual(name = \"\", values = c(\n    \"Undisturbed\" = \"darkgreen\",\n    \"Degraded\" = \"orange\",\n    \"Deforested\" = \"red\",\n    \"Regrowth\" = \"green\",\n    \"Water\" = \"lightblue\",\n    \"Other\" = \"grey\"\n  )) +\n  theme_classic()",
+    "text": "AGB stocks by TMF class through time\n\n\nCode\ndata_all |&gt;\n  group_by(class, year) |&gt;\n  summarise(agbtot = sum(agb * area)) |&gt;\n  ggplot(aes(fill = class, y = agbtot, x = as.numeric(year))) +\n  geom_bar(position = \"stack\", stat = \"identity\") +\n  labs(y = \"AGB (Mg/ha)\", x = \"Year\") +\n  scale_fill_manual(name = \"\", values = c(\n    \"Undisturbed\" = \"darkgreen\",\n    \"Degraded\" = \"orange\",\n    \"Deforested\" = \"red\",\n    \"Regrowth\" = \"green\",\n    \"Water\" = \"lightblue\",\n    \"Other\" = \"grey\"\n  )) +\n  theme_classic()",
     "crumbs": [
-      "Carbon density",
+      "Forest metrics",
       "Biomass map from ESA-CCI"
     ]
   },
   {
-    "objectID": "22_cci_map.html#agb-vs-secondary-forest-age-according-to-tmf",
-    "href": "22_cci_map.html#agb-vs-secondary-forest-age-according-to-tmf",
+    "objectID": "12_cci_map.html#agb-vs-secondary-forest-age-according-to-tmf",
+    "href": "12_cci_map.html#agb-vs-secondary-forest-age-according-to-tmf",
     "title": "Biomass map from ESA-CCI",
     "section": "AGB vs secondary forest age (according to TMF)",
-    "text": "AGB vs secondary forest age (according to TMF)\n\n\nCode\ndf_age &lt;- lapply(unique(df_agb$year), function(yr) {\n  i &lt;- grep(yr, names(tmf))\n  tmf_sec_age &lt;- mask(x = tmf[[seq_len(i)]], ifel(tmf[[i]] == 4, 1, NA)) |&gt;\n  app(\\(x) {\n    if (any(!is.na(x) & x != 4)) {\n      length(x) - max(which(x != 4))\n    } else {\n      NA\n    }\n  })\n  as.data.frame(tmf_sec_age, xy = TRUE) |&gt; \n    rename(age = lyr.1) |&gt; \n    inner_join(filter(df_agb, year == yr))\n}) |&gt; bind_rows()\n  \nggplot(df_age, aes(x = age, y = agb)) +\n  geom_bin2d(bins = 40) +\n  geom_smooth() +\n  scale_fill_continuous(type = \"viridis\") +\n  theme_bw()",
+    "text": "AGB vs secondary forest age (according to TMF)\nOnly forests marked as secondary:\n\n\nCode\ndf_age &lt;- lapply(unique(df_agb$year), function(yr) {\n  i &lt;- grep(yr, names(tmf)) # nolint\n  tmf_sec_age &lt;- mask(x = tmf[[seq_len(i)]], ifel(tmf[[i]] == 4, 1, NA)) |&gt;\n    app(\\(x) {\n      if (any(!is.na(x) & x != 4)) {\n        length(x) - max(which(x != 4))\n      } else {\n        NA\n      }\n    })\n  as.data.frame(tmf_sec_age, xy = TRUE) |&gt;\n    rename(age = lyr.1) |&gt;\n    inner_join(filter(df_agb, year == yr))\n}) |&gt;\n  bind_rows()\n\nggplot(df_age, aes(x = age, y = agb)) +\n  geom_bin2d(bins = 40) +\n  geom_smooth() +\n  scale_fill_continuous(type = \"viridis\") +\n  theme_bw()",
     "crumbs": [
-      "Carbon density",
+      "Forest metrics",
       "Biomass map from ESA-CCI"
+    ]
+  },
+  {
+    "objectID": "20_environment.html",
+    "href": "20_environment.html",
+    "title": "Environmental variables",
+    "section": "",
+    "text": "Forest aboveground carbon stocks have been proven to be linked to environmental variables such as climate and soil characteristics (Muller-Landau et al. 2020). Topography can impact soil properties and water availability and also plays a role in the distribution of carbon stocks (Muscarella et al. 2020). Due to the variation of soil characteristics at fine spatial scales and the lack of local soil data, we do not expect global soil databases to provide much information about local soil characteristics. For this reason, we focus only on climate and topographic variables as predictors of aboveground carbon stocks.\n\n\n\n\nMuller-Landau, Helene C., K. C. Cushman, Eva E. Arroyo, Isabel Martinez Cano, Kristina J. Anderson-Teixeira, Bogumila Backiel, Authors Helene C Muller-landau, et al. 2020. “Patterns and mechanisms of spatial variation in tropical forest productivity, woody residence time, and biomass.” New Physiologist.\n\n\nMuscarella, Robert, Samira Kolyaie, Douglas C. Morton, Jess K. Zimmerman, and María Uriarte. 2020. “Effects of topography on tropical forest structure depend on climate context.” Edited by Tommaso Jucker. Journal of Ecology 108 (1): 145–59. https://doi.org/10.1111/1365-2745.13261.",
+    "crumbs": [
+      "Environmental variables"
+    ]
+  },
+  {
+    "objectID": "21_topography.html",
+    "href": "21_topography.html",
+    "title": "Topographic variables",
+    "section": "",
+    "text": "Code\nlibrary(terra)\nlibrary(sf)\nlibrary(elevatr)\n\n\nElevation data were obtained from the Shuttle Radar Topography Mission (SRTM) product at a spatial resolution of 3 arc-second. From the digital elevation model, terrain derivatives including slope and aspect were computed, along with flow accumulation, defined as the total upstream contributing area for each grid cell. The topographic wetness index (TWI) was then calculated as the natural logarithm of the ratio between flow accumulation and the tangent of slope (expressed in radians).\n\n\nCode\n# use API key from https://portal.opentopography.org below to access data:\napi_key &lt;- NULL # change to API key\nif (!is.null(api_key)) set_opentopo_key(api_key)\n\n# UMRBPL boundaries\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\n\nelevation &lt;- get_elev_raster(area, src = \"gl3\", clip = \"bbox\") |&gt;\n  rast() |&gt;\n  project(\"EPSG:102457\")\nslope &lt;- terrain(elevation, \"slope\", unit = \"radians\")\naspect &lt;- terrain(elevation, \"aspect\", unit = \"radians\")\naccum &lt;- terrain(elevation, \"flowdir\") |&gt; flowAccumulation()\ntwi &lt;- log(accum * prod(res(elevation)) / tan(slope))\ntopo &lt;- c(elevation, slope, aspect, twi) |&gt;\n  project(\"EPSG:4326\")\nnames(topo) &lt;- c(\"elevation\", \"slope\", \"aspect\", \"twi\")\n\nif (!dir.exists(\"data/srtm\")) dir.create(\"data/srtm\")\nwriteRaster(topo, file = \"data/srtm/topo_variables.tif\", overwrite = TRUE)\n\n\n\n\nCode\n\"data/srtm/topo_variables.tif\" |&gt;\n  rast() |&gt;\n  plot()",
+    "crumbs": [
+      "Environmental variables",
+      "Topographic variables"
+    ]
+  },
+  {
+    "objectID": "22_climate.html",
+    "href": "22_climate.html",
+    "title": "Climate variables",
+    "section": "",
+    "text": "Code\nlibrary(terra)\nlibrary(sf)\n\n\nClimate data were obtained from the CHELSA-Bioclim v2.1 database at a spatial resolution of 1 km (Brun et al. 2022). We extracted mean annual temperature (BIO1, in °C) and mean annual precipitation (BIO12, in mm/year), both calculated as long-term averages over the 1981–2010 reference period.\n\n\nCode\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\n\nif (!require(Rchelsa)) {\n  remotes::install_git(\"https://gitlabext.wsl.ch/karger/rchelsa.git\")\n  library(Rchelsa)\n}\nclim &lt;- lapply(\n  c(\"bio01\", \"bio12\"),\n  function(rs) {\n    getChelsa(\n      rs,\n      extent = ext(area),\n      date = \"1981-2010\", dataset = \"chelsa-bioclim\"\n    )\n  }\n) |&gt;\n  rast()\nnames(clim) &lt;- c(\"mean_temperature\", \"mean_precipitation\")\n\nif (!dir.exists(\"data/chelsa\")) dir.create(\"data/chelsa\")\nwriteRaster(clim, file = \"data/chelsa/climate_variables.tif\", overwrite = TRUE)\n\n\n\n\nCode\n\"data/chelsa/climate_variables.tif\" |&gt;\n  rast() |&gt;\n  plot()\n\n\n\n\n\n\n\n\n\n\n\n\n\nBrun, P., N. E. Zimmermann, C. Hari, L. Pellissier, and D. N. Karger. 2022. “CHELSA-BIOCLIM+ A novel set of global climate-related predictors at kilometre-resolution.” https://doi.org/https://www.doi.org/10.16904/envidat.332.",
+    "crumbs": [
+      "Environmental variables",
+      "Climate variables"
+    ]
+  },
+  {
+    "objectID": "30_socioeco.html",
+    "href": "30_socioeco.html",
+    "title": "Socioeconomic variables",
+    "section": "",
+    "text": "We compiled a set of spatially explicit socioeconomic variables representing human influences on the spatial distribution of forest carbon stocks in the study area, including forest disturbance history, land-use and land-cover change, distance to roads, population density and administrative status.",
+    "crumbs": [
+      "Socioeconomic variables"
+    ]
+  },
+  {
+    "objectID": "31_tmf.html",
+    "href": "31_tmf.html",
+    "title": "Forest disturbance history",
+    "section": "",
+    "text": "Maps\nWe used the Tropical Moist Forest product, developed by the European Commission’s Joint Research Centre. This product, based on Landsat images, classifies forest areas and detects annual changes (including deforestation and forest degradation) from 1990 to 2024 at a resolution of 30 metres.\nCode\nplot(c(\n  tmf[[which(grepl(2010, names(tmf)))]],\n  tmf[[which(grepl(2024, names(tmf)))]]\n), col = c(\"darkgreen\", \"orange\", \"red\", \"green\", \"lightblue\", \"grey\"))",
+    "crumbs": [
+      "Socioeconomic variables",
+      "Forest disturbance history"
+    ]
+  },
+  {
+    "objectID": "31_tmf.html#changes-in-forest-area-between-1990-and-2024",
+    "href": "31_tmf.html#changes-in-forest-area-between-1990-and-2024",
+    "title": "Forest disturbance history",
+    "section": "Changes in forest area between 1990 and 2024",
+    "text": "Changes in forest area between 1990 and 2024\n\n\nCode\nggplot(data, aes(x = year)) +\n  geom_line(aes(y = Degraded, color = \"Degraded\"), size = 0.9) +\n  geom_line(aes(y = Deforested, color = \"Deforested\"), size = 0.9) +\n  geom_line(aes(y = Regrowth, color = \"Regrowth\"), size = 0.9) +\n  scale_color_manual(name = \"\", values = c(\n    \"Degraded\" = \"orange\",\n    \"Deforested\" = \"red\",\n    \"Regrowth\" = \"green\"\n  )) +\n  labs(title = \"TMF changes from 1990 to 2024\", x = \"Year\", y = \"Surface (Ha)\")",
+    "crumbs": [
+      "Socioeconomic variables",
+      "Forest disturbance history"
+    ]
+  },
+  {
+    "objectID": "32_lulc.html",
+    "href": "32_lulc.html",
+    "title": "Philippines LULC data",
+    "section": "",
+    "text": "Temporal trends\nCode\ndf_lulc &lt;- as.data.frame(lulc, xy = TRUE)\nnames(df_lulc) &lt;-\n  c(\"lon\", \"lat\", \"LC1988\", \"LC2003\", \"AGG14\", \"AGG12\", \"CLASS_NAME\")\ndf_lulc |&gt;\n  setDT() |&gt;\n  melt(id.vars = c(\"lon\", \"lat\")) |&gt;\n  ggplot(aes(lon, lat, fill = value)) +\n  geom_raster() +\n  scale_fill_manual(values = c(\"chartreuse4\", \"chartreuse2\", \"grey\", \"gold\")) +\n  facet_wrap(~variable) +\n  coord_equal() +\n  theme_classic() +\n  labs(x = NULL, y = NULL, fill = NULL) +\n  theme(legend.position = c(0.85, 0.2))\nCode\nfiles &lt;- list.files(\"data/LULC\", recursive = TRUE, \"shp\")\nyears &lt;- data.frame(\n  layer = seq_along(length(files)),\n  year = as.numeric(substr(files, 1, 4))\n)\nfreq(lulc) |&gt;\n  mutate(area = count * 0.09) |&gt;\n  left_join(years) |&gt;\n  ggplot(aes(year, area, col = value)) +\n  geom_line() +\n  scale_color_manual(values = c(\"chartreuse4\", \"chartreuse2\", \"grey\", \"gold\")) +\n  theme_classic() +\n  labs(x = \"Year\", y = \"Area [ha]\", col = NULL)",
+    "crumbs": [
+      "Socioeconomic variables",
+      "Philippines LULC data"
+    ]
+  },
+  {
+    "objectID": "32_lulc.html#comparison-with-tmf",
+    "href": "32_lulc.html#comparison-with-tmf",
+    "title": "Philippines LULC data",
+    "section": "Comparison with TMF",
+    "text": "Comparison with TMF\n\n\nCode\nlevels(tmf2020) &lt;- data.frame(\n  value = 0:6,\n  category = c(\n    NA, \"Undisturbed Forest\", \"Degraded Forest\", \"Deforested\",\n    \"Regrowing Forest\", \"Water\", \"Other\"\n  )\n)\n\nas.data.frame(c(tmf2020, lulc[[5]])) |&gt;\n  select(LC, category) |&gt;\n  table() |&gt;\n  kable()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nUndisturbed Forest\nDegraded Forest\nDeforested\nRegrowing Forest\nWater\nOther\n\n\n\n\nClosed Forest\n25515\n253\n4\n23\n0\n3\n\n\nOpen Forest\n39846\n5957\n873\n2188\n0\n829\n\n\nOther\n668\n2240\n4453\n12158\n33\n55434\n\n\nShrubs\n5275\n15854\n12885\n47470\n1\n69921\n\n\n\n\n\nCode\nas.data.frame(c(tmf2020, lulc[[5]]), xy = TRUE) |&gt;\n  filter(!is.na(LC)) |&gt;\n  ggplot(aes(x, y, fill = category)) +\n  geom_raster() +\n  coord_equal() +\n  theme_classic() +\n  facet_wrap(~LC) +\n  labs(x = NULL, y = NULL, fill = NULL)",
+    "crumbs": [
+      "Socioeconomic variables",
+      "Philippines LULC data"
+    ]
+  },
+  {
+    "objectID": "33_roads.html",
+    "href": "33_roads.html",
+    "title": "Distance to roads",
+    "section": "",
+    "text": "Code\nlibrary(terra)\nlibrary(sf)\nlibrary(osmdata)\nlibrary(ggplot2)\n\n\nDistance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds.\n\n\nCode\n# get bounding box in the right format\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt; st_transform(crs = \"EPSG:4326\")\numrbpl_bb &lt;- area %&gt;% ext() %&gt;% matrix(ncol=2, byrow = TRUE)\nrownames(umrbpl_bb) &lt;- c(\"x\", \"y\")\ncolnames(umrbpl_bb) &lt;- c(\"min\", \"max\")\n\n# download road network from OSM\nroads_all &lt;- umrbpl_bb %&gt;%\n  opq() %&gt;%\n  add_osm_feature(key = \"highway\") %&gt;% \n  osmdata_sf()\nroads_all$osm_lines &lt;- subset(roads_all$osm_lines, highway != \"residential\")\n\ntemplate_raster &lt;- rast(\"data/srtm/topo_variables.tif\")[[1]]\ndist_to_roads &lt;- distance(template_raster, roads$osm_lines)\nif (!dir.exists(\"data/osm\")) dir.create(\"data/osm\")\nwriteRaster(dist_to_roads, \"data/osm/dist_to_road.tif\")\n\n\n\n\nCode\n\"data/osm/dist_to_road.tif\" |&gt; rast() |&gt; plot()",
+    "crumbs": [
+      "Socioeconomic variables",
+      "Distance to roads"
     ]
   }
 ]
