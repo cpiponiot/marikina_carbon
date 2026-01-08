@@ -1,0 +1,86 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(terra)
+library(sf)
+```
+
+# Comparing maps {.unnumbered}
+
+```{r}
+area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+  read_sf() |>
+  st_transform(crs = "EPSG:4326")
+```
+
+Below I created a dummy database
+
+```{r}
+data_inv <- data.frame(
+  carbon = rnorm(50, 200, 50),
+  lon = runif(50, ext(area)[1], ext(area)[2]),
+  lat = runif(50, ext(area)[3], ext(area)[4]),
+  year = rep(c(2010, 2020), each = 25)
+)
+```
+
+```{r}
+diagnostic <- function(x, y) {
+  rmse <- signif(sqrt(mean((x - y)^2, na.rm = TRUE)), 3)
+  mape <- signif(mean(abs((x - y) / x), na.rm = TRUE) * 100, 3)
+  r2 <- signif(cor(x, y, use = "complete.obs")^2, 2)
+  bias <- signif(mean(x - y, na.rm = TRUE), 3)
+  cat(
+    "RMSE:", rmse,
+    "Mg/ha\nMAPE:", mape,
+    "%\nR²:", r2, "\nBias:",
+    bias, "Mg/ha"
+  )
+}
+```
+
+## CCI maps
+
+We match the year of the inventory to the closest year of the map. 
+
+```{r}
+cci <- list.files("data/biomass/", "AGB-MERGED", full.names = TRUE) |>
+  rast()
+names(cci) <- do.call(cbind, strsplit(names(cci), "-"))[7, ]
+
+data_inv$cci_carbon <- apply(data_inv, 1, function(x) {
+  closest <- which.min(abs(as.numeric(names(cci)) - x[4]))
+  extract(cci[[closest]], t(x[2:3]))
+}) |> unlist()
+
+diagnostic(data_inv$carbon, data_inv$cci_carbon)
+```
+
+
+## Global forest watch map
+
+```{r}
+gfw <- list.files("data/biomass/", "harris", full.names = TRUE) |>
+  rast()
+
+data_inv$gfw_carbon <- extract(gfw, data_inv[, c("lon", "lat")])[, 2]
+
+diagnostic(data_inv$carbon, data_inv$gfw_carbon)
+```
+
+
+## ORNL map
+
+```{r}
+ornl <- list.files("data/biomass/", "aboveground", full.names = TRUE) |>
+  rast()
+
+data_inv$ornl_carbon <- extract(ornl, data_inv[, c("lon", "lat")])[, 2]
+
+diagnostic(data_inv$carbon, data_inv$ornl_carbon)
+```
+
+## Map choice
+
+The final map chosen is ...
+

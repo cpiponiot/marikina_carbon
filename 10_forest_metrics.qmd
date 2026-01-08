@@ -5,4 +5,4 @@
 
 # Forest metrics {.unnumbered}
 
-In this section, we extract various forest metrics derived from satellite and other remote sensing products. We then compare these maps to carbon density values derived from ground-based measurements in the Upper Marikina area. 
+In this section, we extract various forest metrics derived from satellite and other remote sensing products. We then compare these maps to carbon density values derived from ground-based measurements in the Upper Marikina area.

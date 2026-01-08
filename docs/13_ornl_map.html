@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Climate variables – Changes in forest cover and carbon density in the Upper Marikina RBPL</title>
+<title>Harmonised biomass map for the year 2010 – Changes in forest cover and carbon density in the Upper Marikina RBPL</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -85,8 +85,8 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./30_socioeco.html" rel="next">
-<link href="./21_topography.html" rel="prev">
+<link href="./14_harris_map.html" rel="next">
+<link href="./12_cci_map.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -137,7 +137,7 @@ div.csl-indent {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./20_environment.html">Environmental variables</a></li><li class="breadcrumb-item"><a href="./22_climate.html">Climate variables</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./10_forest_metrics.html">Forest metrics</a></li><li class="breadcrumb-item"><a href="./13_ornl_map.html">Harmonised biomass map for the year 2010</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -191,7 +191,7 @@ div.csl-indent {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./13_ornl_map.html" class="sidebar-item-text sidebar-link">
+  <a href="./13_ornl_map.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Harmonised biomass map for the year 2010</span></a>
   </div>
 </li>
@@ -220,7 +220,7 @@ div.csl-indent {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./22_climate.html" class="sidebar-item-text sidebar-link active">
+  <a href="./22_climate.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Climate variables</span></a>
   </div>
 </li>
@@ -272,9 +272,9 @@ div.csl-indent {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./20_environment.html">Environmental variables</a></li><li class="breadcrumb-item"><a href="./22_climate.html">Climate variables</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./10_forest_metrics.html">Forest metrics</a></li><li class="breadcrumb-item"><a href="./13_ornl_map.html">Harmonised biomass map for the year 2010</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Climate variables</h1>
+<h1 class="title">Harmonised biomass map for the year 2010</h1>
 </div>
 
 
@@ -298,46 +298,39 @@ div.csl-indent {
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Climate data were obtained from the CHELSA-Bioclim v2.1 database at a spatial resolution of 1 km <span class="citation" data-cites="Brun2022">(<a href="#ref-Brun2022" role="doc-biblioref">Brun et al. 2022</a>)</span>. We extracted mean annual temperature (BIO1, in °C) and mean annual precipitation (BIO12, in mm/year), both calculated as long-term averages over the 1981–2010 reference period.</p>
+<p>This map was created by combining multiple data sources on aboveground and belowground biomass from 2010 at a resolution of 300 meters. To be consistent with other maps compared in this section, we only kept the aboveground part. This map’s advantage is that it maps carbon not only in forests, but in other vegetation types as well. A full description of the data is available in <span class="citation" data-cites="Spawn2020">Spawn et al. (<a href="#ref-Spawn2020" role="doc-biblioref">2020</a>)</span>.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>area <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/umrbpl/"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>, <span class="at">pattern =</span> <span class="st">"shp$"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_sf</span>() <span class="sc">|&gt;</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">require</span>(Rchelsa)) {</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  remotes<span class="sc">::</span><span class="fu">install_git</span>(<span class="st">"https://gitlabext.wsl.ch/karger/rchelsa.git"</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(Rchelsa)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>clim <span class="ot">&lt;-</span> <span class="fu">lapply</span>(</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">"bio01"</span>, <span class="st">"bio12"</span>),</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(rs) {</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">getChelsa</span>(</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>      rs,</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">extent =</span> <span class="fu">ext</span>(area),</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">date =</span> <span class="st">"1981-2010"</span>, <span class="at">dataset =</span> <span class="st">"chelsa-bioclim"</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>()</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(clim) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"mean_temperature"</span>, <span class="st">"mean_precipitation"</span>)</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(<span class="st">"data/chelsa"</span>)) <span class="fu">dir.create</span>(<span class="st">"data/chelsa"</span>)</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(clim, <span class="at">file =</span> <span class="st">"data/chelsa/climate_variables.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(<span class="st">"data/biomass"</span>)) <span class="fu">dir.create</span>(<span class="st">"data/biomass"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">paste0</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"https://data.ornldaac.earthdata.nasa.gov/protected/global_vegetation/"</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Global_Maps_C_Density_2010/data/aboveground_biomass_carbon_2010.tif"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">download.file</span>(<span class="st">"data/biomass/aboveground_biomass_carbon_2010.tif"</span>, <span class="st">"curl"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">"data/biomass/aboveground_biomass_carbon_2010.tiff"</span> <span class="sc">|&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">crop</span>(<span class="fu">c</span>(<span class="dv">115</span>, <span class="dv">130</span>, <span class="dv">5</span>, <span class="dv">20</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">writeRaster</span>(<span class="st">"data/biomass/aboveground_biomass_carbon_2010.tiff"</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">overwrite =</span> <span class="cn">TRUE</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="st">"data/chelsa/climate_variables.tif"</span> <span class="sc">|&gt;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>() <span class="sc">|&gt;</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>area <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/umrbpl/"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>, <span class="at">pattern =</span> <span class="st">"shp$"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_sf</span>() <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">"data/biomass/aboveground_biomass_carbon_2010.tiff"</span> <span class="sc">|&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>() <span class="sc">|&gt;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">crop</span>(area) <span class="sc">|&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="22_climate_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="13_ornl_map_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -345,8 +338,8 @@ div.csl-indent {
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
-<div id="ref-Brun2022" class="csl-entry" role="listitem">
-Brun, P., N. E. Zimmermann, C. Hari, L. Pellissier, and D. N. Karger. 2022. <span>“<span class="nocase">CHELSA-BIOCLIM+ A novel set of global climate-related predictors at kilometre-resolution</span>.”</span> https://doi.org/<a href="https://www.doi.org/10.16904/envidat.332">https://www.doi.org/10.16904/envidat.332</a>.
+<div id="ref-Spawn2020" class="csl-entry" role="listitem">
+Spawn, Seth A., Clare C. Sullivan, Tyler J. Lark, and Holly K. Gibbs. 2020. <span>“<span class="nocase">Harmonized global maps of above and belowground biomass carbon density in the year 2010</span>.”</span> <em>Scientific Data</em> 7 (1): 112. <a href="https://doi.org/10.1038/s41597-020-0444-4">https://doi.org/10.1038/s41597-020-0444-4</a>.
 </div>
 </div>
 
@@ -752,13 +745,13 @@ Brun, P., N. E. Zimmermann, C. Hari, L. Pellissier, and D. N. Karger. 2022. <spa
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./21_topography.html" class="pagination-link" aria-label="Topographic variables">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Topographic variables</span>
+      <a href="./12_cci_map.html" class="pagination-link" aria-label="Biomass map from ESA-CCI">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Biomass map from ESA-CCI</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./30_socioeco.html" class="pagination-link" aria-label="Socioeconomic variables">
-        <span class="nav-page-text">Socioeconomic variables</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./14_harris_map.html" class="pagination-link" aria-label="Harmonised biomass map from Global Forest Watch">
+        <span class="nav-page-text">Harmonised biomass map from Global Forest Watch</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

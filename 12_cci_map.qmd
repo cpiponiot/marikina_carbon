@@ -21,9 +21,10 @@ According to their [validation protocol](https://climate.esa.int/media/documents
 ```{r}
 #| message: false
 #| warning: false
+#| eval: false
 #| fig.width: 10
 #| fig.height: 5
-if (!dir.exists("data/CCI")) dir.create("data/CCI")
+if (!dir.exists("data/biomass")) dir.create("data/biomass")
 u0 <- "https://dap.ceda.ac.uk/neodc/esacci/biomass/data/agb/maps/v6.0/geotiff/"
 for (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {
   for (var in c("AGB", "AGB_SD")) {
@@ -49,22 +50,27 @@ for (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {
     }
   }
 }
+```
+
+
+```{r}
+#| message: false
+#| warning: false
 area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
-agb <- list.files("data/CCI/", full.names = TRUE) |>
+agb <- list.files("data/biomass/", full.names = TRUE) |>
   grep(pattern = "AGB-", value = TRUE) |>
   rast() |>
   crop(ext(area)) |>
   mask(area) |>
   tidyterra::rename_with(~ sapply(strsplit(.x, "-"), function(i) i[7]))
-uncertainty <- list.files("data/CCI/", full.names = TRUE) |>
+uncertainty <- list.files("data/biomass/", full.names = TRUE) |>
   grep(pattern = "AGB_SD", value = TRUE) |>
   rast() |>
   crop(ext(area)) |>
   mask(area) |>
   tidyterra::rename_with(~ sapply(strsplit(.x, "-"), function(i) i[7]))
-
 ggplot() +
   geom_spatraster(data = agb) +
   facet_wrap(~lyr, nrow = 2) +

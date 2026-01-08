@@ -1,0 +1,41 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(terra)
+library(sf)
+```
+
+# Harmonised biomass map for the year 2010 {.unnumbered}
+
+This map was created by combining multiple data sources on aboveground and belowground biomass from 2010 at a resolution of 300 meters. To be consistent with other maps compared in this section, we only kept the aboveground part. This map's advantage is that it maps carbon not only in forests, but in other vegetation types as well. A full description of the data is available in @Spawn2020.
+
+```{r}
+#| message: false
+#| warning: false
+#| eval: false
+if (!dir.exists("data/biomass")) dir.create("data/biomass")
+paste0(
+  "https://data.ornldaac.earthdata.nasa.gov/protected/global_vegetation/",
+  "Global_Maps_C_Density_2010/data/aboveground_biomass_carbon_2010.tif"
+) |>
+  download.file("data/biomass/aboveground_biomass_carbon_2010.tif", "curl")
+"data/biomass/aboveground_biomass_carbon_2010.tiff" |>
+  rast() |>
+  crop(c(115, 130, 5, 20)) |>
+  writeRaster("data/biomass/aboveground_biomass_carbon_2010.tiff",
+    overwrite = TRUE
+  )
+```
+
+```{r}
+#| message: false
+#| warning: false
+area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+  read_sf() |>
+  st_transform(crs = "EPSG:4326")
+"data/biomass/aboveground_biomass_carbon_2010.tiff" |>
+  rast() |>
+  crop(area) |>
+  plot()
+```
+

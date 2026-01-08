@@ -11,6 +11,8 @@ book:
       chapters:
         - 11_tree_height.qmd
         - 12_cci_map.qmd
+        - 13_ornl_map.qmd
+        - 14_harris_map.qmd
     - part: 20_environment.qmd
       chapters:
         - 21_topography.qmd
