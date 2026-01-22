@@ -26,8 +26,8 @@ rownames(umrbpl_bb) <- c("x", "y")
 colnames(umrbpl_bb) <- c("min", "max")
 
 # download road network from OSM
-roads_all <- umrbpl_bb  |>
-  opq()  |>
+roads_all <- umrbpl_bb |>
+  opq() |>
   add_osm_feature(key = "highway") |>
   osmdata_sf()
 roads_all$osm_lines <- subset(roads_all$osm_lines, highway != "residential")

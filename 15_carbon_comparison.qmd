@@ -3,28 +3,96 @@
 #| warning: false
 library(terra)
 library(sf)
+library(docxtractr)
+library(tidyverse)
+library(readxl)
 ```
 
 # Comparing maps {.unnumbered}
 
 ```{r}
+#| message: false
+#| warning: false
 area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 ```
 
-Below I created a dummy database
 
 ```{r}
-data_inv <- data.frame(
-  carbon = rnorm(50, 200, 50),
-  lon = runif(50, ext(area)[1], ext(area)[2]),
-  lat = runif(50, ext(area)[3], ext(area)[4]),
-  year = rep(c(2010, 2020), each = 25)
-)
+#| message: false
+#| warning: false
+
+# NGP project
+ngp <- list.files("data/inventories/", "Carbon densities", full.names = TRUE) |>
+  read_docx() |>
+  docx_extract_tbl(1) |>
+  set_names(c(
+    "plot",
+    paste0(
+      rep(c("agb", "agc"), 2),
+      rep(c("_h", ""), each = 2)
+    )
+  )) |>
+  filter(!grepl("Average|Transect", plot)) |>
+  mutate(plot = paste0(rep(c(1:23, 27), each = 3), "_", rep(1:3, 24))) |>
+  mutate(across(contains("ag"), function(x) {
+    ifelse(is.na(as.numeric(x)), 0, as.numeric(x))
+  }))
+
+location_ngp <-
+  read_excel("data/inventories/Carbon Stock and Sequestration Data.xlsx",
+    sheet = "NGP_Carbon Assessment", range = "B3:E84"
+  ) |>
+  set_names(c("plot", "x", "y", "elev")) |>
+  mutate(transect = rep(1:27, each = 3)) |>
+  mutate(plot = paste(transect, plot, sep = "_")) |>
+  group_by(transect) |>
+  # correct problematic x and y values
+  mutate(
+    x = ifelse(abs(x - median(x)) > 1e4, median(x), x),
+    y = ifelse(abs(y - median(y)) > 1e4, median(y), y)
+  )
+
+df_ngp <- left_join(ngp, location_ngp) |>
+  separate(plot, c("transect", "plot")) |>
+  group_by(transect) |>
+  summarise(agb = mean(agb_h), x = round(mean(x)), y = round(mean(y)))
+sf_ngp <- df_ngp |>
+  st_as_sf(coords = c("x", "y"), crs = 32651) |> # check which CRS was used!!
+  st_transform(crs = "EPSG:4326")
+
+# location of BAMS plots
+location_bams <-
+  read_excel("data/inventories/Carbon Stock and Sequestration Data.xlsx",
+    sheet = "BAMS_Data", range = "A2:C38"
+  ) |>
+  rename_with(tolower) |>
+  mutate(quadrat = rep(1:9, each = 4)) |>
+  separate(coordinates, c("x", "y")) |>
+  mutate(across(c("x", "y"), as.numeric)) |>
+  group_by(quadrat) |>
+  summarise(x = mean(x), y = mean(y))
+
+## location of FRA plot 105
+sf_fra <- st_read("data/inventories/Subplots_Tract105/Subplots_Tract105.shp") |>
+  mutate(dataset = "fra")
+
+sf_all <-
+  bind_rows(list(ngp = location_ngp, bams = location_bams), .id = "dataset") |>
+  st_as_sf(coords = c("x", "y"), crs = 32651) |> # check which CRS was used!!
+  bind_rows(sf_fra) |>
+  st_transform(crs = "EPSG:4326")
+
+
+ggplot() +
+  geom_sf(data = area) +
+  geom_sf(data = sf_all, aes(col = dataset))
 ```
 
 ```{r}
+#| message: false
+#| warning: false
 diagnostic <- function(x, y) {
   rmse <- signif(sqrt(mean((x - y)^2, na.rm = TRUE)), 3)
   mape <- signif(mean(abs((x - y) / x), na.rm = TRUE) * 100, 3)
@@ -44,43 +112,63 @@ diagnostic <- function(x, y) {
 We match the year of the inventory to the closest year of the map. 
 
 ```{r}
+#| message: false
+#| warning: false
 cci <- list.files("data/biomass/", "AGB-MERGED", full.names = TRUE) |>
   rast()
 names(cci) <- do.call(cbind, strsplit(names(cci), "-"))[7, ]
 
-data_inv$cci_carbon <- apply(data_inv, 1, function(x) {
-  closest <- which.min(abs(as.numeric(names(cci)) - x[4]))
-  extract(cci[[closest]], t(x[2:3]))
-}) |> unlist()
+# check inventory year
+df_ngp$year <- 2010
+df_ngp$cci_carbon <- sapply(seq_len(nrow(df_ngp)), function(i) {
+  closest <- which.min(abs(as.numeric(names(cci)) - df_ngp$year[i]))
+  terra::extract(cci[[closest]], sf_ngp[i, ])[, 2]
+})
 
-diagnostic(data_inv$carbon, data_inv$cci_carbon)
+diagnostic(df_ngp$agb, df_ngp$cci_carbon)
 ```
 
 
 ## Global forest watch map
 
 ```{r}
+#| message: false
+#| warning: false
 gfw <- list.files("data/biomass/", "harris", full.names = TRUE) |>
   rast()
-
-data_inv$gfw_carbon <- extract(gfw, data_inv[, c("lon", "lat")])[, 2]
-
-diagnostic(data_inv$carbon, data_inv$gfw_carbon)
+df_ngp$gfw_carbon <- terra::extract(gfw, sf_ngp)[, 2]
+diagnostic(df_ngp$agb, df_ngp$gfw_carbon)
 ```
 
 
 ## ORNL map
 
 ```{r}
+#| message: false
+#| warning: false
 ornl <- list.files("data/biomass/", "aboveground", full.names = TRUE) |>
   rast()
-
-data_inv$ornl_carbon <- extract(ornl, data_inv[, c("lon", "lat")])[, 2]
-
-diagnostic(data_inv$carbon, data_inv$ornl_carbon)
+df_ngp$ornl_carbon <- terra::extract(ornl, sf_ngp)[, 2]
+diagnostic(df_ngp$agb, df_ngp$ornl_carbon)
 ```
 
 ## Map choice
+
+```{r}
+#| message: false
+#| warning: false
+#| fig-width: 10
+#| fig-height: 4
+df_ngp |>
+  pivot_longer(cols = contains("_carbon")) |>
+  mutate(name = gsub("_carbon", "", name)) |>
+  ggplot(aes(agb, value)) +
+  geom_point() +
+  facet_wrap(~name, scale = "free") +
+  labs(x = "Ground-based AGB (Mg/ha)", y = "Remote-sensing AGB (Mg/ha)") +
+  geom_abline(slope = 1, intercept = 0, lty = 2)
+```
+
 
 The final map chosen is ...
 

@@ -159,6 +159,50 @@
     ]
   },
   {
+    "objectID": "15_carbon_comparison.html",
+    "href": "15_carbon_comparison.html",
+    "title": "Comparing maps",
+    "section": "",
+    "text": "CCI maps\nWe match the year of the inventory to the closest year of the map.\nCode\ncci &lt;- list.files(\"data/biomass/\", \"AGB-MERGED\", full.names = TRUE) |&gt;\n  rast()\nnames(cci) &lt;- do.call(cbind, strsplit(names(cci), \"-\"))[7, ]\n\n# check inventory year\ndf_ngp$year &lt;- 2010\ndf_ngp$cci_carbon &lt;- sapply(seq_len(nrow(df_ngp)), function(i) {\n  closest &lt;- which.min(abs(as.numeric(names(cci)) - df_ngp$year[i]))\n  terra::extract(cci[[closest]], sf_ngp[i,])[,2]\n})\n\ndiagnostic(df_ngp$agb, df_ngp$cci_carbon)\n\n\nRMSE: 116 Mg/ha\nMAPE: 164 %\nR²: 0.08 \nBias: 42.4 Mg/ha",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#global-forest-watch-map",
+    "href": "15_carbon_comparison.html#global-forest-watch-map",
+    "title": "Comparing maps",
+    "section": "Global forest watch map",
+    "text": "Global forest watch map\n\n\nCode\ngfw &lt;- list.files(\"data/biomass/\", \"harris\", full.names = TRUE) |&gt;\n  rast()\ndf_ngp$gfw_carbon &lt;- terra::extract(gfw, sf_ngp)[, 2]\ndiagnostic(df_ngp$agb, df_ngp$gfw_carbon)\n\n\nRMSE: 121 Mg/ha\nMAPE: 502 %\nR²: 0.15 \nBias: -27.5 Mg/ha",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#ornl-map",
+    "href": "15_carbon_comparison.html#ornl-map",
+    "title": "Comparing maps",
+    "section": "ORNL map",
+    "text": "ORNL map\n\n\nCode\nornl &lt;- list.files(\"data/biomass/\", \"aboveground\", full.names = TRUE) |&gt;\n  rast()\ndf_ngp$ornl_carbon &lt;- terra::extract(ornl, sf_ngp)[, 2]\ndiagnostic(df_ngp$agb, df_ngp$ornl_carbon)\n\n\nRMSE: 316 Mg/ha\nMAPE: 1740 %\nR²: 0.0053 \nBias: -250 Mg/ha",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#map-choice",
+    "href": "15_carbon_comparison.html#map-choice",
+    "title": "Comparing maps",
+    "section": "Map choice",
+    "text": "Map choice\n\n\nCode\ndf_ngp |&gt;\n  pivot_longer(cols = contains(\"_carbon\")) |&gt;\n  mutate(name = gsub(\"_carbon\", \"\", name)) |&gt;\n  ggplot(aes(agb, value)) + \n  geom_point() + \n  facet_wrap(~name, scale = \"free\") + \n  labs(x = \"Ground-based AGB (Mg/ha)\", y = \"Remote-sensing AGB (Mg/ha)\") +\n  geom_abline(slope=1, intercept=0, lty=2)\n\n\n\n\n\n\n\n\n\nThe final map chosen is …",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
     "objectID": "20_environment.html",
     "href": "20_environment.html",
     "title": "Environmental variables",
@@ -249,7 +293,7 @@
     "href": "33_roads.html",
     "title": "Distance to roads",
     "section": "",
-    "text": "Code\nlibrary(terra)\nlibrary(sf)\nlibrary(osmdata)\nlibrary(ggplot2)\n\n\nDistance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds.\n\n\nCode\n# get bounding box in the right format\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\numrbpl_bb &lt;- area |&gt;\n  ext() |&gt;\n  matrix(ncol = 2, byrow = TRUE)\nrownames(umrbpl_bb) &lt;- c(\"x\", \"y\")\ncolnames(umrbpl_bb) &lt;- c(\"min\", \"max\")\n\n# download road network from OSM\nroads_all &lt;- umrbpl_bb  |&gt;\n  opq()  |&gt;\n  add_osm_feature(key = \"highway\") |&gt;\n  osmdata_sf()\nroads_all$osm_lines &lt;- subset(roads_all$osm_lines, highway != \"residential\")\n\ntemplate_raster &lt;- rast(\"data/srtm/topo_variables.tif\")[[1]]\ndist_to_roads &lt;- distance(template_raster, roads$osm_lines)\nif (!dir.exists(\"data/osm\")) dir.create(\"data/osm\")\nwriteRaster(dist_to_roads, \"data/osm/dist_to_road.tif\")\n\n\n\n\nCode\n\"data/osm/dist_to_road.tif\" |&gt;\n  rast() |&gt;\n  plot()",
+    "text": "Code\nlibrary(terra)\nlibrary(sf)\nlibrary(osmdata)\nlibrary(ggplot2)\n\n\nDistance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds.\n\n\nCode\n# get bounding box in the right format\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\numrbpl_bb &lt;- area |&gt;\n  ext() |&gt;\n  matrix(ncol = 2, byrow = TRUE)\nrownames(umrbpl_bb) &lt;- c(\"x\", \"y\")\ncolnames(umrbpl_bb) &lt;- c(\"min\", \"max\")\n\n# download road network from OSM\nroads_all &lt;- umrbpl_bb  |&gt;\n  opq()  |&gt;\n  add_osm_feature(key = \"highway\") |&gt;\n  osmdata_sf()\nroads_all$osm_lines &lt;- subset(roads_all$osm_lines, highway != \"residential\")\n\ntemplate_raster &lt;- rast(\"data/srtm/topo_variables.tif\")[[1]]\ndist_to_roads &lt;- distance(template_raster, roads$osm_lines)\nif (!dir.exists(\"data/osm\")) dir.create(\"data/osm\")\nwriteRaster(dist_to_roads, \"data/osm/dist_to_road.tif\")\n\n\n\n\nCode\n\"data/osm/dist_to_road.tif\" |&gt;\n  rast() |&gt;  plot()",
     "crumbs": [
       "Socioeconomic variables",
       "Distance to roads"
