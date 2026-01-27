@@ -257,10 +257,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#cci-maps" id="toc-cci-maps" class="nav-link active" data-scroll-target="#cci-maps">CCI maps</a></li>
+  <li><a href="#ngp-project" id="toc-ngp-project" class="nav-link active" data-scroll-target="#ngp-project">NGP project</a></li>
+  <li><a href="#bams-plots" id="toc-bams-plots" class="nav-link" data-scroll-target="#bams-plots">BAMS plots</a></li>
+  <li><a href="#fra-plots" id="toc-fra-plots" class="nav-link" data-scroll-target="#fra-plots">FRA plots</a></li>
+  <li><a href="#location-of-the-plots" id="toc-location-of-the-plots" class="nav-link" data-scroll-target="#location-of-the-plots">Location of the plots</a></li>
+  <li><a href="#comparison-with-biomass-maps" id="toc-comparison-with-biomass-maps" class="nav-link" data-scroll-target="#comparison-with-biomass-maps">Comparison with biomass maps</a>
+  <ul class="collapse">
+  <li><a href="#cci-maps" id="toc-cci-maps" class="nav-link" data-scroll-target="#cci-maps">CCI maps</a></li>
   <li><a href="#global-forest-watch-map" id="toc-global-forest-watch-map" class="nav-link" data-scroll-target="#global-forest-watch-map">Global forest watch map</a></li>
   <li><a href="#ornl-map" id="toc-ornl-map" class="nav-link" data-scroll-target="#ornl-map">ORNL map</a></li>
   <li><a href="#map-choice" id="toc-map-choice" class="nav-link" data-scroll-target="#map-choice">Map choice</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -304,54 +311,121 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<section id="ngp-project" class="level2">
+<h2 class="anchored" data-anchor-id="ngp-project">NGP project</h2>
+<p>These plots are from a reforestation project (secondary forests) in Upper Marikina. The plots are xxx ha in size.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># NGP project</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>ngp <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/inventories/"</span>, <span class="st">"Carbon densities"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>ngp <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/inventories/"</span>, <span class="st">"NGP"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_docx</span>() <span class="sc">|&gt;</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">docx_extract_tbl</span>(<span class="dv">1</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_names</span>(<span class="fu">c</span>(<span class="st">"plot"</span>, </span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>              <span class="fu">paste0</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"agb"</span>, <span class="st">"agc"</span>), <span class="dv">2</span>),</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"_h"</span>, <span class="st">""</span>), <span class="at">each=</span><span class="dv">2</span>)))) <span class="sc">|&gt;</span> </span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"Average|Transect"</span>, plot)) <span class="sc">|&gt;</span> </span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plot =</span> <span class="fu">paste0</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">23</span>, <span class="dv">27</span>), <span class="at">each =</span> <span class="dv">3</span>), <span class="st">"_"</span>, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="dv">24</span>))) <span class="sc">|&gt;</span> </span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">contains</span>(<span class="st">"ag"</span>), <span class="cf">function</span>(x) </span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(<span class="fu">is.na</span>(<span class="fu">as.numeric</span>(x)), <span class="dv">0</span>, <span class="fu">as.numeric</span>(x)))) </span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>location_ngp <span class="ot">&lt;-</span> </span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_excel</span>(<span class="st">"data/inventories/Carbon Stock and Sequestration Data.xlsx"</span>,</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                     <span class="at">sheet =</span> <span class="st">"NGP_Carbon Assessment"</span>, <span class="at">range =</span> <span class="st">"B3:E84"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_names</span>(<span class="fu">c</span>(<span class="st">"plot"</span>, <span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"elev"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">transect =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">27</span>, <span class="at">each=</span><span class="dv">3</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plot =</span> <span class="fu">paste</span>(transect, plot, <span class="at">sep=</span><span class="st">"_"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(transect) <span class="sc">|&gt;</span> </span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># correct problematic x and y values</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">x =</span> <span class="fu">ifelse</span>(<span class="fu">abs</span>(x<span class="sc">-</span><span class="fu">median</span>(x)) <span class="sc">&gt;</span> <span class="fl">1e4</span>, <span class="fu">median</span>(x), x), </span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> <span class="fu">ifelse</span>(<span class="fu">abs</span>(y<span class="sc">-</span><span class="fu">median</span>(y)) <span class="sc">&gt;</span> <span class="fl">1e4</span>, <span class="fu">median</span>(y), y))</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>df_ngp <span class="ot">&lt;-</span> <span class="fu">left_join</span>(ngp, location_ngp) <span class="sc">|&gt;</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(plot, <span class="fu">c</span>(<span class="st">"transect"</span>, <span class="st">"plot"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(transect) <span class="sc">|&gt;</span> </span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">agb =</span> <span class="fu">mean</span>(agb_h), <span class="at">x =</span> <span class="fu">round</span>(<span class="fu">mean</span>(x)), <span class="at">y =</span> <span class="fu">round</span>(<span class="fu">mean</span>(y)))</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>sf_ngp <span class="ot">&lt;-</span> df_ngp <span class="sc">|&gt;</span></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), <span class="at">crs =</span> <span class="dv">32651</span>) <span class="sc">|&gt;</span> <span class="co"># check which CRS was used!!</span></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co"># location of BAMS plots</span></span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>location_bams <span class="ot">&lt;-</span> </span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_excel</span>(<span class="st">"data/inventories/Carbon Stock and Sequestration Data.xlsx"</span>,</span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>                     <span class="at">sheet =</span> <span class="st">"BAMS_Data"</span>, <span class="at">range =</span> <span class="st">"A2:C38"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(tolower) <span class="sc">|&gt;</span> </span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">quadrat =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">9</span>, <span class="at">each =</span> <span class="dv">4</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(coordinates, <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), as.numeric)) <span class="sc">|&gt;</span> </span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(quadrat) <span class="sc">|&gt;</span> </span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">x =</span> <span class="fu">mean</span>(x), <span class="at">y =</span> <span class="fu">mean</span>(y))</span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="do">## location of FRA plot 105</span></span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>sf_fra <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/inventories/Subplots_Tract105/Subplots_Tract105.shp"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dataset =</span> <span class="st">"fra"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">docx_extract_tbl</span>(<span class="dv">1</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_names</span>(<span class="fu">c</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"plot"</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste0</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"agb"</span>, <span class="st">"agc"</span>), <span class="dv">2</span>), <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"_h"</span>, <span class="st">""</span>), <span class="at">each =</span> <span class="dv">2</span>)))) <span class="sc">|&gt;</span> </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"Average|Transect"</span>, plot)) <span class="sc">|&gt;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plot =</span> <span class="fu">paste0</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">23</span>, <span class="dv">27</span>), <span class="at">each =</span> <span class="dv">3</span>), <span class="st">"_"</span>, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="dv">24</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">contains</span>(<span class="st">"ag"</span>), <span class="cf">function</span>(x) {</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(<span class="fu">is.na</span>(<span class="fu">as.numeric</span>(x)), <span class="dv">0</span>, <span class="fu">as.numeric</span>(x))</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  }))</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>location_ngp <span class="ot">&lt;-</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_excel</span>(<span class="st">"data/inventories/Carbon Stock and Sequestration Data.xlsx"</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>             <span class="at">sheet =</span> <span class="st">"NGP_Carbon Assessment"</span>, <span class="at">range =</span> <span class="st">"B3:E84"</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_names</span>(<span class="fu">c</span>(<span class="st">"plot"</span>, <span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"elev"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">transect =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">27</span>, <span class="at">each =</span> <span class="dv">3</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plot =</span> <span class="fu">paste</span>(transect, plot, <span class="at">sep =</span> <span class="st">"_"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(transect) <span class="sc">|&gt;</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># correct problematic x and y values</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">ifelse</span>(<span class="fu">abs</span>(x <span class="sc">-</span> <span class="fu">median</span>(x)) <span class="sc">&gt;</span> <span class="fl">1e4</span>, <span class="fu">median</span>(x), x),</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">ifelse</span>(<span class="fu">abs</span>(y <span class="sc">-</span> <span class="fu">median</span>(y)) <span class="sc">&gt;</span> <span class="fl">1e4</span>, <span class="fu">median</span>(y), y)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>df_ngp <span class="ot">&lt;-</span> <span class="fu">left_join</span>(ngp, location_ngp) <span class="sc">|&gt;</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(plot, <span class="fu">c</span>(<span class="st">"transect"</span>, <span class="st">"plot"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(transect) <span class="sc">|&gt;</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">agb =</span> <span class="fu">mean</span>(agb_h), <span class="at">x =</span> <span class="fu">round</span>(<span class="fu">mean</span>(x)), <span class="at">y =</span> <span class="fu">round</span>(<span class="fu">mean</span>(y)))</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>sf_ngp <span class="ot">&lt;-</span> df_ngp <span class="sc">|&gt;</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), <span class="at">crs =</span> <span class="dv">32651</span>) <span class="sc">|&gt;</span> <span class="co"># check which CRS was used!!</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>df_ngp <span class="sc">|&gt;</span> </span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(agb)) <span class="sc">+</span> </span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>() <span class="sc">+</span> </span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Aboveground biomass density (Mg/ha)"</span>) <span class="sc">+</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="15_carbon_comparison_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="bams-plots" class="level2">
+<h2 class="anchored" data-anchor-id="bams-plots">BAMS plots</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># BAMS plots</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>bams <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/inventories/"</span>, <span class="st">"BAMS"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_docx</span>() <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">docx_extract_tbl</span>(<span class="dv">1</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_names</span>(<span class="fu">c</span>(</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"plot"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste0</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"agb"</span>, <span class="st">"agc"</span>), <span class="dv">2</span>), <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"_h"</span>, <span class="st">""</span>), <span class="at">each =</span> <span class="dv">2</span>)))) <span class="sc">|&gt;</span> </span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">contains</span>(<span class="st">"ag"</span>), as.numeric))</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>location_bams <span class="ot">&lt;-</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_excel</span>(<span class="st">"data/inventories/Carbon Stock and Sequestration Data.xlsx"</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">sheet =</span> <span class="st">"BAMS_Data"</span>, <span class="at">range =</span> <span class="st">"A2:C38"</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(tolower) <span class="sc">|&gt;</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plot =</span> <span class="fu">as.character</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">9</span>, <span class="at">each =</span> <span class="dv">4</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(coordinates, <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), as.numeric)) <span class="sc">|&gt;</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(plot) <span class="sc">|&gt;</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">x =</span> <span class="fu">mean</span>(x), <span class="at">y =</span> <span class="fu">mean</span>(y))</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>df_bams <span class="ot">&lt;-</span> <span class="fu">left_join</span>(bams, location_bams) <span class="sc">|&gt;</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(plot, x, y, agb_h) <span class="sc">|&gt;</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">agb =</span> agb_h)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>df_bams <span class="sc">|&gt;</span> </span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(agb)) <span class="sc">+</span> </span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>() <span class="sc">+</span> </span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Aboveground biomass density (Mg/ha)"</span>) <span class="sc">+</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="15_carbon_comparison_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="fra-plots" class="level2">
+<h2 class="anchored" data-anchor-id="fra-plots">FRA plots</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fra <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/inventories/"</span>, <span class="st">"FRA"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_docx</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">docx_extract_tbl</span>(<span class="dv">1</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_names</span>(<span class="fu">c</span>(</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"track"</span>, <span class="st">"plot"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste0</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"agb"</span>, <span class="st">"agc"</span>), <span class="dv">2</span>), <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"_h"</span>, <span class="st">""</span>), <span class="at">each =</span> <span class="dv">2</span>)))) <span class="sc">|&gt;</span> </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, as.numeric)) <span class="sc">|&gt;</span> </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(plot)) <span class="sc">|&gt;</span> </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fill</span>(track, <span class="at">.direction =</span> <span class="st">"down"</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="do">## FRA plots</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>sf_fra <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/inventories/Subplots_Tract105/Subplots_Tract105.shp"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dataset =</span> <span class="st">"fra"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plot =</span> <span class="fu">paste0</span>(<span class="st">"105_"</span>, <span class="fu">gsub</span>(<span class="st">"Plot "</span>, <span class="st">""</span>, PLOT)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Reading layer `Subplots_Tract105' from data source 
@@ -365,40 +439,90 @@ Projected CRS: WGS 84 / UTM zone 51N</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sf_all <span class="ot">&lt;-</span> </span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">list</span>(<span class="at">ngp =</span> location_ngp, <span class="at">bams =</span> location_bams), <span class="at">.id =</span> <span class="st">"dataset"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), <span class="at">crs =</span> <span class="dv">32651</span>) <span class="sc">|&gt;</span> <span class="co"># check which CRS was used!!</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(sf_fra) <span class="sc">|&gt;</span> </span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> area) <span class="sc">+</span> </span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> sf_all, <span class="fu">aes</span>(<span class="at">col=</span>dataset))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fra <span class="sc">|&gt;</span> </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(agb_h)) <span class="sc">+</span> </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>() <span class="sc">+</span> </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">median</span>(fra<span class="sc">$</span>agb_h), <span class="at">lty=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="at">geom=</span><span class="st">"text"</span>, <span class="at">x =</span> <span class="fu">median</span>(fra<span class="sc">$</span>agb_h) <span class="sc">+</span><span class="dv">50</span>, <span class="at">y =</span> <span class="dv">10</span>, <span class="at">angle=</span><span class="dv">90</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">label=</span><span class="fu">paste</span>(<span class="st">"Median:"</span>, <span class="fu">round</span>(<span class="fu">median</span>(fra<span class="sc">$</span>agb_h)))) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">mean</span>(fra<span class="sc">$</span>agb_h), <span class="at">lty=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="at">geom=</span><span class="st">"text"</span>, <span class="at">x =</span> <span class="fu">mean</span>(fra<span class="sc">$</span>agb_h) <span class="sc">+</span><span class="dv">50</span>, <span class="at">y =</span> <span class="dv">10</span>, <span class="at">angle=</span><span class="dv">90</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">label=</span><span class="fu">paste</span>(<span class="st">"Mean:"</span>, <span class="fu">round</span>(<span class="fu">mean</span>(fra<span class="sc">$</span>agb_h)))) <span class="sc">+</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Aboveground biomass density (Mg/ha)"</span>) <span class="sc">+</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="15_carbon_comparison_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="15_carbon_comparison_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
+</section>
+<section id="location-of-the-plots" class="level2">
+<h2 class="anchored" data-anchor-id="location-of-the-plots">Location of the plots</h2>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>diagnostic <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y) {</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  rmse <span class="ot">&lt;-</span> <span class="fu">signif</span>(<span class="fu">sqrt</span>(<span class="fu">mean</span>((x <span class="sc">-</span> y)<span class="sc">^</span><span class="dv">2</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)), <span class="dv">3</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  mape <span class="ot">&lt;-</span> <span class="fu">signif</span>(<span class="fu">mean</span>(<span class="fu">abs</span>((x <span class="sc">-</span> y) <span class="sc">/</span> x), <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">3</span>)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  r2 <span class="ot">&lt;-</span> <span class="fu">signif</span>(<span class="fu">cor</span>(x, y, <span class="at">use =</span> <span class="st">"complete.obs"</span>)<span class="sc">^</span><span class="dv">2</span>, <span class="dv">2</span>)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  bias <span class="ot">&lt;-</span> <span class="fu">signif</span>(<span class="fu">mean</span>(x <span class="sc">-</span> y, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="dv">3</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"RMSE:"</span>, rmse,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Mg/ha</span><span class="sc">\n</span><span class="st">MAPE:"</span>, mape,</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"%</span><span class="sc">\n</span><span class="st">R²:"</span>, r2, <span class="st">"</span><span class="sc">\n</span><span class="st">Bias:"</span>,</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    bias, <span class="st">"Mg/ha"</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df_fra <span class="ot">&lt;-</span> fra <span class="sc">|&gt;</span> </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dataset =</span> <span class="st">"fra"</span>, <span class="at">plot =</span> <span class="fu">paste</span>(track, plot, <span class="at">sep=</span><span class="st">"_"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(dataset, plot, agb_h) <span class="sc">|&gt;</span> </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">agb =</span> agb_h)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>df_all <span class="ot">&lt;-</span> df_ngp <span class="sc">|&gt;</span> </span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">plot =</span> transect) <span class="sc">|&gt;</span> </span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dataset =</span> <span class="st">"ngp"</span>)<span class="sc">|&gt;</span> </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">mutate</span>(df_bams, <span class="at">dataset =</span> <span class="st">"bams"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(df_fra) <span class="sc">|&gt;</span> </span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>x, <span class="sc">-</span>y)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>location_ngp <span class="ot">&lt;-</span> df_ngp <span class="sc">|&gt;</span> </span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(transect, x, y) <span class="sc">|&gt;</span> <span class="fu">rename</span>(<span class="at">plot=</span>transect)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>sf_all <span class="ot">&lt;-</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">list</span>(<span class="at">ngp =</span> location_ngp, <span class="at">bams =</span> location_bams), <span class="at">.id =</span> <span class="st">"dataset"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), <span class="at">crs =</span> <span class="dv">32651</span>) <span class="sc">|&gt;</span> <span class="co"># check which CRS was used!!</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(sf_fra) <span class="sc">|&gt;</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> area) <span class="sc">+</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> sf_all, <span class="fu">aes</span>(<span class="at">col =</span> dataset))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="15_carbon_comparison_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="comparison-with-biomass-maps" class="level1">
+<h1>Comparison with biomass maps</h1>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>diagnostic <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y) {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  rmse <span class="ot">&lt;-</span> <span class="fu">signif</span>(<span class="fu">sqrt</span>(<span class="fu">mean</span>((x <span class="sc">-</span> y)<span class="sc">^</span><span class="dv">2</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)), <span class="dv">3</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  mape <span class="ot">&lt;-</span> <span class="fu">signif</span>(<span class="fu">mean</span>(<span class="fu">abs</span>((x <span class="sc">-</span> y) <span class="sc">/</span> x), <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">3</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  r2 <span class="ot">&lt;-</span> <span class="fu">signif</span>(<span class="fu">cor</span>(x, y, <span class="at">use =</span> <span class="st">"complete.obs"</span>)<span class="sc">^</span><span class="dv">2</span>, <span class="dv">2</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  bias <span class="ot">&lt;-</span> <span class="fu">signif</span>(<span class="fu">mean</span>(x <span class="sc">-</span> y, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="dv">3</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"RMSE:"</span>, rmse,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Mg/ha</span><span class="sc">\n</span><span class="st">MAPE:"</span>, mape,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"%</span><span class="sc">\n</span><span class="st">R²:"</span>, r2, <span class="st">"</span><span class="sc">\n</span><span class="st">Bias:"</span>,</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    bias, <span class="st">"Mg/ha"</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>robust_extract <span class="ot">&lt;-</span> <span class="cf">function</span>(coord, rst) {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">nrow</span>(coord) <span class="sc">&gt;</span> <span class="dv">0</span>)  {</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    val <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(rst, coord)[, <span class="dv">2</span>] <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> val <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(val)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <section id="cci-maps" class="level2">
@@ -407,24 +531,25 @@ Projected CRS: WGS 84 / UTM zone 51N</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>cci <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/biomass/"</span>, <span class="st">"AGB-MERGED"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>()</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(cci) <span class="ot">&lt;-</span> <span class="fu">do.call</span>(cbind, <span class="fu">strsplit</span>(<span class="fu">names</span>(cci), <span class="st">"-"</span>))[<span class="dv">7</span>, ]</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># check inventory year</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>df_ngp<span class="sc">$</span>year <span class="ot">&lt;-</span> <span class="dv">2010</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>df_ngp<span class="sc">$</span>cci_carbon <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(df_ngp)), <span class="cf">function</span>(i) {</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  closest <span class="ot">&lt;-</span> <span class="fu">which.min</span>(<span class="fu">abs</span>(<span class="fu">as.numeric</span>(<span class="fu">names</span>(cci)) <span class="sc">-</span> df_ngp<span class="sc">$</span>year[i]))</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">extract</span>(cci[[closest]], sf_ngp[i,])[,<span class="dv">2</span>]</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">diagnostic</span>(df_ngp<span class="sc">$</span>agb, df_ngp<span class="sc">$</span>cci_carbon)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>cci <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/biomass/"</span>, <span class="st">"AGB-MERGED"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>()</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(cci) <span class="ot">&lt;-</span> <span class="fu">do.call</span>(cbind, <span class="fu">strsplit</span>(<span class="fu">names</span>(cci), <span class="st">"-"</span>))[<span class="dv">7</span>, ]</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># check inventory year</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>df_all<span class="sc">$</span>year <span class="ot">&lt;-</span> <span class="dv">2010</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>df_all<span class="sc">$</span>cci_carbon <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(df_all)), <span class="cf">function</span>(i) {</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  closest <span class="ot">&lt;-</span> <span class="fu">which.min</span>(<span class="fu">abs</span>(<span class="fu">as.numeric</span>(<span class="fu">names</span>(cci)) <span class="sc">-</span> df_all<span class="sc">$</span>year[i]))</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  sf_all <span class="sc">|&gt;</span> </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(dataset<span class="sc">==</span>df_all<span class="sc">$</span>dataset[i] <span class="sc">&amp;</span> plot<span class="sc">==</span>df_all<span class="sc">$</span>plot[i]) <span class="sc">|&gt;</span> </span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">robust_extract</span>(cci[[closest]])</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="fu">diagnostic</span>(df_all<span class="sc">$</span>agb, df_all<span class="sc">$</span>cci_carbon)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>RMSE: 116 Mg/ha
-MAPE: 164 %
-R²: 0.08 
-Bias: 42.4 Mg/ha</code></pre>
+<pre><code>RMSE: 107 Mg/ha
+MAPE: 158 %
+R²: 0.095 
+Bias: 41 Mg/ha</code></pre>
 </div>
 </div>
 </section>
@@ -433,16 +558,20 @@ Bias: 42.4 Mg/ha</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>gfw <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/biomass/"</span>, <span class="st">"harris"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>()</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>df_ngp<span class="sc">$</span>gfw_carbon <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(gfw, sf_ngp)[, <span class="dv">2</span>]</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">diagnostic</span>(df_ngp<span class="sc">$</span>agb, df_ngp<span class="sc">$</span>gfw_carbon)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>gfw <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/biomass/"</span>, <span class="st">"harris"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>()</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>df_all<span class="sc">$</span>gfw_carbon <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(df_all)), <span class="cf">function</span>(i) {</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  sf_all <span class="sc">|&gt;</span> </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(dataset<span class="sc">==</span>df_all<span class="sc">$</span>dataset[i] <span class="sc">&amp;</span> plot<span class="sc">==</span>df_all<span class="sc">$</span>plot[i]) <span class="sc">|&gt;</span> </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">robust_extract</span>(gfw)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="fu">diagnostic</span>(df_all<span class="sc">$</span>agb, df_all<span class="sc">$</span>gfw_carbon)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>RMSE: 121 Mg/ha
-MAPE: 502 %
-R²: 0.15 
-Bias: -27.5 Mg/ha</code></pre>
+<pre><code>RMSE: 127 Mg/ha
+MAPE: 573 %
+R²: 0.14 
+Bias: -57.4 Mg/ha</code></pre>
 </div>
 </div>
 </section>
@@ -451,16 +580,20 @@ Bias: -27.5 Mg/ha</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>ornl <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/biomass/"</span>, <span class="st">"aboveground"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>()</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>df_ngp<span class="sc">$</span>ornl_carbon <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(ornl, sf_ngp)[, <span class="dv">2</span>]</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">diagnostic</span>(df_ngp<span class="sc">$</span>agb, df_ngp<span class="sc">$</span>ornl_carbon)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>ornl <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"data/biomass/"</span>, <span class="st">"aboveground"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>()</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>df_all<span class="sc">$</span>ornl_carbon <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(df_all)), <span class="cf">function</span>(i) {</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  sf_all <span class="sc">|&gt;</span> </span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(dataset<span class="sc">==</span>df_all<span class="sc">$</span>dataset[i] <span class="sc">&amp;</span> plot<span class="sc">==</span>df_all<span class="sc">$</span>plot[i]) <span class="sc">|&gt;</span> </span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">robust_extract</span>(ornl)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="fu">diagnostic</span>(df_all<span class="sc">$</span>agb, df_all<span class="sc">$</span>ornl_carbon)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>RMSE: 316 Mg/ha
-MAPE: 1740 %
-R²: 0.0053 
-Bias: -250 Mg/ha</code></pre>
+<pre><code>RMSE: 339 Mg/ha
+MAPE: 1800 %
+R²: 0.033 
+Bias: -290 Mg/ha</code></pre>
 </div>
 </div>
 </section>
@@ -469,19 +602,20 @@ Bias: -250 Mg/ha</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>df_ngp <span class="sc">|&gt;</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">contains</span>(<span class="st">"_carbon"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span> <span class="fu">gsub</span>(<span class="st">"_carbon"</span>, <span class="st">""</span>, name)) <span class="sc">|&gt;</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(agb, value)) <span class="sc">+</span> </span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="at">scale =</span> <span class="st">"free"</span>) <span class="sc">+</span> </span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Ground-based AGB (Mg/ha)"</span>, <span class="at">y =</span> <span class="st">"Remote-sensing AGB (Mg/ha)"</span>) <span class="sc">+</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope=</span><span class="dv">1</span>, <span class="at">intercept=</span><span class="dv">0</span>, <span class="at">lty=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df_all <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">contains</span>(<span class="st">"_carbon"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(value)) <span class="sc">|&gt;</span> </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span> <span class="fu">gsub</span>(<span class="st">"_carbon"</span>, <span class="st">""</span>, name)) <span class="sc">|&gt;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(agb, value, <span class="at">col=</span>dataset)) <span class="sc">+</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="at">scale =</span> <span class="st">"free"</span>) <span class="sc">+</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Ground-based AGB (Mg/ha)"</span>, <span class="at">y =</span> <span class="st">"Remote-sensing AGB (Mg/ha)"</span>) <span class="sc">+</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="15_carbon_comparison_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="15_carbon_comparison_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="960"></p>
 </figure>
 </div>
 </div>
@@ -489,6 +623,7 @@ Bias: -250 Mg/ha</code></pre>
 <p>The final map chosen is …</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

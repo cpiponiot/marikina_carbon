@@ -163,7 +163,7 @@
     "href": "15_carbon_comparison.html",
     "title": "Comparing maps",
     "section": "",
-    "text": "CCI maps\nWe match the year of the inventory to the closest year of the map.\nCode\ncci &lt;- list.files(\"data/biomass/\", \"AGB-MERGED\", full.names = TRUE) |&gt;\n  rast()\nnames(cci) &lt;- do.call(cbind, strsplit(names(cci), \"-\"))[7, ]\n\n# check inventory year\ndf_ngp$year &lt;- 2010\ndf_ngp$cci_carbon &lt;- sapply(seq_len(nrow(df_ngp)), function(i) {\n  closest &lt;- which.min(abs(as.numeric(names(cci)) - df_ngp$year[i]))\n  terra::extract(cci[[closest]], sf_ngp[i,])[,2]\n})\n\ndiagnostic(df_ngp$agb, df_ngp$cci_carbon)\n\n\nRMSE: 116 Mg/ha\nMAPE: 164 %\nR²: 0.08 \nBias: 42.4 Mg/ha",
+    "text": "NGP project\nThese plots are from a reforestation project (secondary forests) in Upper Marikina. The plots are xxx ha in size.\nCode\n# NGP project\nngp &lt;- list.files(\"data/inventories/\", \"NGP\", full.names = TRUE) |&gt;\n  read_docx() |&gt;\n  docx_extract_tbl(1) |&gt;\n  set_names(c(\n    \"plot\",\n    paste0(rep(c(\"agb\", \"agc\"), 2), rep(c(\"_h\", \"\"), each = 2)))) |&gt; \n  filter(!grepl(\"Average|Transect\", plot)) |&gt;\n  mutate(plot = paste0(rep(c(1:23, 27), each = 3), \"_\", rep(1:3, 24))) |&gt;\n  mutate(across(contains(\"ag\"), function(x) {\n    ifelse(is.na(as.numeric(x)), 0, as.numeric(x))\n  }))\n\nlocation_ngp &lt;-\n  read_excel(\"data/inventories/Carbon Stock and Sequestration Data.xlsx\",\n             sheet = \"NGP_Carbon Assessment\", range = \"B3:E84\"\n  ) |&gt;\n  set_names(c(\"plot\", \"x\", \"y\", \"elev\")) |&gt;\n  mutate(transect = rep(1:27, each = 3)) |&gt;\n  mutate(plot = paste(transect, plot, sep = \"_\")) |&gt;\n  group_by(transect) |&gt;\n  # correct problematic x and y values\n  mutate(\n    x = ifelse(abs(x - median(x)) &gt; 1e4, median(x), x),\n    y = ifelse(abs(y - median(y)) &gt; 1e4, median(y), y)\n  )\n\ndf_ngp &lt;- left_join(ngp, location_ngp) |&gt;\n  separate(plot, c(\"transect\", \"plot\")) |&gt;\n  group_by(transect) |&gt;\n  summarise(agb = mean(agb_h), x = round(mean(x)), y = round(mean(y)))\nsf_ngp &lt;- df_ngp |&gt;\n  st_as_sf(coords = c(\"x\", \"y\"), crs = 32651) |&gt; # check which CRS was used!!\n  st_transform(crs = \"EPSG:4326\")\n\ndf_ngp |&gt; \n  ggplot(aes(agb)) + \n  geom_histogram() + \n  labs(x = \"Aboveground biomass density (Mg/ha)\") +\n  theme_classic()",
     "crumbs": [
       "Forest metrics",
       "Comparing maps"
@@ -174,7 +174,7 @@
     "href": "15_carbon_comparison.html#global-forest-watch-map",
     "title": "Comparing maps",
     "section": "Global forest watch map",
-    "text": "Global forest watch map\n\n\nCode\ngfw &lt;- list.files(\"data/biomass/\", \"harris\", full.names = TRUE) |&gt;\n  rast()\ndf_ngp$gfw_carbon &lt;- terra::extract(gfw, sf_ngp)[, 2]\ndiagnostic(df_ngp$agb, df_ngp$gfw_carbon)\n\n\nRMSE: 121 Mg/ha\nMAPE: 502 %\nR²: 0.15 \nBias: -27.5 Mg/ha",
+    "text": "Global forest watch map\n\n\nCode\ngfw &lt;- list.files(\"data/biomass/\", \"harris\", full.names = TRUE) |&gt;\n  rast()\ndf_all$gfw_carbon &lt;- sapply(seq_len(nrow(df_all)), function(i) {\n  sf_all |&gt; \n    filter(dataset==df_all$dataset[i] & plot==df_all$plot[i]) |&gt; \n    robust_extract(gfw)\n})\ndiagnostic(df_all$agb, df_all$gfw_carbon)\n\n\nRMSE: 127 Mg/ha\nMAPE: 573 %\nR²: 0.14 \nBias: -57.4 Mg/ha",
     "crumbs": [
       "Forest metrics",
       "Comparing maps"
@@ -185,7 +185,7 @@
     "href": "15_carbon_comparison.html#ornl-map",
     "title": "Comparing maps",
     "section": "ORNL map",
-    "text": "ORNL map\n\n\nCode\nornl &lt;- list.files(\"data/biomass/\", \"aboveground\", full.names = TRUE) |&gt;\n  rast()\ndf_ngp$ornl_carbon &lt;- terra::extract(ornl, sf_ngp)[, 2]\ndiagnostic(df_ngp$agb, df_ngp$ornl_carbon)\n\n\nRMSE: 316 Mg/ha\nMAPE: 1740 %\nR²: 0.0053 \nBias: -250 Mg/ha",
+    "text": "ORNL map\n\n\nCode\nornl &lt;- list.files(\"data/biomass/\", \"aboveground\", full.names = TRUE) |&gt;\n  rast()\ndf_all$ornl_carbon &lt;- sapply(seq_len(nrow(df_all)), function(i) {\n  sf_all |&gt; \n    filter(dataset==df_all$dataset[i] & plot==df_all$plot[i]) |&gt; \n    robust_extract(ornl)\n})\ndiagnostic(df_all$agb, df_all$ornl_carbon)\n\n\nRMSE: 339 Mg/ha\nMAPE: 1800 %\nR²: 0.033 \nBias: -290 Mg/ha",
     "crumbs": [
       "Forest metrics",
       "Comparing maps"
@@ -196,7 +196,7 @@
     "href": "15_carbon_comparison.html#map-choice",
     "title": "Comparing maps",
     "section": "Map choice",
-    "text": "Map choice\n\n\nCode\ndf_ngp |&gt;\n  pivot_longer(cols = contains(\"_carbon\")) |&gt;\n  mutate(name = gsub(\"_carbon\", \"\", name)) |&gt;\n  ggplot(aes(agb, value)) + \n  geom_point() + \n  facet_wrap(~name, scale = \"free\") + \n  labs(x = \"Ground-based AGB (Mg/ha)\", y = \"Remote-sensing AGB (Mg/ha)\") +\n  geom_abline(slope=1, intercept=0, lty=2)\n\n\n\n\n\n\n\n\n\nThe final map chosen is …",
+    "text": "Map choice\n\n\nCode\ndf_all |&gt;\n  pivot_longer(cols = contains(\"_carbon\")) |&gt;\n  filter(!is.na(value)) |&gt; \n  mutate(name = gsub(\"_carbon\", \"\", name)) |&gt;\n  ggplot(aes(agb, value, col=dataset)) +\n  geom_point() +\n  facet_wrap(~name, scale = \"free\") +\n  labs(x = \"Ground-based AGB (Mg/ha)\", y = \"Remote-sensing AGB (Mg/ha)\") +\n  geom_abline(slope = 1, intercept = 0, lty = 2)\n\n\n\n\n\n\n\n\n\nThe final map chosen is …",
     "crumbs": [
       "Forest metrics",
       "Comparing maps"
@@ -308,6 +308,50 @@
     "crumbs": [
       "Socioeconomic variables",
       "Population density"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#bams-plots",
+    "href": "15_carbon_comparison.html#bams-plots",
+    "title": "Comparing maps",
+    "section": "BAMS plots",
+    "text": "BAMS plots\n\n\nCode\n# BAMS plots\nbams &lt;- list.files(\"data/inventories/\", \"BAMS\", full.names = TRUE) |&gt;\n  read_docx() |&gt;\n  docx_extract_tbl(1) |&gt;\n  set_names(c(\n    \"plot\",\n    paste0(rep(c(\"agb\", \"agc\"), 2), rep(c(\"_h\", \"\"), each = 2)))) |&gt; \n  mutate(across(contains(\"ag\"), as.numeric))\nlocation_bams &lt;-\n  read_excel(\"data/inventories/Carbon Stock and Sequestration Data.xlsx\",\n             sheet = \"BAMS_Data\", range = \"A2:C38\"\n  ) |&gt;\n  rename_with(tolower) |&gt;\n  mutate(plot = as.character(rep(1:9, each = 4))) |&gt;\n  separate(coordinates, c(\"x\", \"y\")) |&gt;\n  mutate(across(c(\"x\", \"y\"), as.numeric)) |&gt;\n  group_by(plot) |&gt;\n  summarise(x = mean(x), y = mean(y))\ndf_bams &lt;- left_join(bams, location_bams) |&gt;\n  select(plot, x, y, agb_h) |&gt;\n  rename(agb = agb_h)\ndf_bams |&gt; \n  ggplot(aes(agb)) + \n  geom_histogram() + \n  labs(x = \"Aboveground biomass density (Mg/ha)\") +\n  theme_classic()",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#fra-plots",
+    "href": "15_carbon_comparison.html#fra-plots",
+    "title": "Comparing maps",
+    "section": "FRA plots",
+    "text": "FRA plots\n\n\nCode\nfra &lt;- list.files(\"data/inventories/\", \"FRA\", full.names = TRUE) |&gt;\n  read_docx() |&gt;\n  docx_extract_tbl(1) |&gt;\n  set_names(c(\n    \"track\", \"plot\",\n    paste0(rep(c(\"agb\", \"agc\"), 2), rep(c(\"_h\", \"\"), each = 2)))) |&gt; \n  mutate(across(1:6, as.numeric)) |&gt; \n  filter(!is.na(plot)) |&gt; \n  fill(track, .direction = \"down\")\n## FRA plots\nsf_fra &lt;- st_read(\"data/inventories/Subplots_Tract105/Subplots_Tract105.shp\") |&gt;\n  mutate(dataset = \"fra\") |&gt; \n  mutate(plot = paste0(\"105_\", gsub(\"Plot \", \"\", PLOT)))\n\n\nReading layer `Subplots_Tract105' from data source \n  `D:\\github\\marikina_carbon\\data\\inventories\\Subplots_Tract105\\Subplots_Tract105.shp' \n  using driver `ESRI Shapefile'\nSimple feature collection with 4 features and 3 fields\nGeometry type: POLYGON\nDimension:     XY\nBounding box:  xmin: 311861.2 ymin: 1631644 xmax: 312383.6 ymax: 1632167\nProjected CRS: WGS 84 / UTM zone 51N\n\n\nCode\nfra |&gt; \n  ggplot(aes(agb_h)) + \n  geom_histogram() + \n  geom_vline(xintercept = median(fra$agb_h), lty=2) +\n  annotate(geom=\"text\", x = median(fra$agb_h) +50, y = 10, angle=90,\n           label=paste(\"Median:\", round(median(fra$agb_h)))) +\n  geom_vline(xintercept = mean(fra$agb_h), lty=2) +\n  annotate(geom=\"text\", x = mean(fra$agb_h) +50, y = 10, angle=90,\n           label=paste(\"Mean:\", round(mean(fra$agb_h)))) +\n  labs(x = \"Aboveground biomass density (Mg/ha)\") +\n  theme_classic()",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#location-of-the-plots",
+    "href": "15_carbon_comparison.html#location-of-the-plots",
+    "title": "Comparing maps",
+    "section": "Location of the plots",
+    "text": "Location of the plots\n\n\nCode\ndf_fra &lt;- fra |&gt; \n  mutate(dataset = \"fra\", plot = paste(track, plot, sep=\"_\")) |&gt; \n  select(dataset, plot, agb_h) |&gt; \n  rename(agb = agb_h)\ndf_all &lt;- df_ngp |&gt; \n  rename(plot = transect) |&gt; \n  mutate(dataset = \"ngp\")|&gt; \n  bind_rows(mutate(df_bams, dataset = \"bams\")) |&gt; \n  bind_rows(df_fra) |&gt; \n  select(-x, -y)\nlocation_ngp &lt;- df_ngp |&gt; \n  select(transect, x, y) |&gt; rename(plot=transect)\nsf_all &lt;-\n  bind_rows(list(ngp = location_ngp, bams = location_bams), .id = \"dataset\") |&gt;\n  st_as_sf(coords = c(\"x\", \"y\"), crs = 32651) |&gt; # check which CRS was used!!\n  bind_rows(sf_fra) |&gt;\n  st_transform(crs = \"EPSG:4326\")\nggplot() +\n  geom_sf(data = area) +\n  geom_sf(data = sf_all, aes(col = dataset))",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#cci-maps",
+    "href": "15_carbon_comparison.html#cci-maps",
+    "title": "Comparing maps",
+    "section": "CCI maps",
+    "text": "CCI maps\nWe match the year of the inventory to the closest year of the map.\n\n\nCode\ncci &lt;- list.files(\"data/biomass/\", \"AGB-MERGED\", full.names = TRUE) |&gt;\n  rast()\nnames(cci) &lt;- do.call(cbind, strsplit(names(cci), \"-\"))[7, ]\n\n# check inventory year\ndf_all$year &lt;- 2010\ndf_all$cci_carbon &lt;- sapply(seq_len(nrow(df_all)), function(i) {\n  closest &lt;- which.min(abs(as.numeric(names(cci)) - df_all$year[i]))\n  sf_all |&gt; \n    filter(dataset==df_all$dataset[i] & plot==df_all$plot[i]) |&gt; \n    robust_extract(cci[[closest]])\n})\ndiagnostic(df_all$agb, df_all$cci_carbon)\n\n\nRMSE: 107 Mg/ha\nMAPE: 158 %\nR²: 0.095 \nBias: 41 Mg/ha",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
     ]
   }
 ]
