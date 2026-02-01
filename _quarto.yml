@@ -24,6 +24,9 @@ book:
         - 32_lulc.qmd
         - 33_roads.qmd
         - 34_population.qmd
+    - part: 40_modelling.qmd
+      chapters:
+        - 41_potential_c.qmd
 
 bibliography: references.bib
 

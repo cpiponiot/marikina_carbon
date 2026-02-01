@@ -1,0 +1,31 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(terra)
+library(sf)
+```
+
+# Wind speed {.unnumbered}
+
+```{r}
+#| message: false
+#| warning: false
+#| eval: false
+"https://globalwindatlas.info/api/gis/country/PHL/wind-speed/10" |>
+  download.file(destfile = "data/wind/PHL_wind-speed_10m.tif", method = "curl")
+area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+  read_sf() |>
+  st_transform(crs = "EPSG:4326")
+"data/wind/PHL_wind-speed_10m.tif" |>
+  rast() |>
+  mask(area) |>
+  writeRaster("data/wind/UMRBPL_wind-speed_10m.tif")
+```
+```{r}
+#| message: false
+#| warning: false
+"data/wind/UMRBPL_wind-speed_10m.tif" |>
+  rast() |>
+  plot()
+```
+

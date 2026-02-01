@@ -1,0 +1,52 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(terra)
+library(sf)
+library(tidyverse)
+```
+
+# Land tenure {.unnumbered}
+
+```{r}
+area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+  read_sf() |>
+  st_transform(crs = "EPSG:4326")
+tenure <- "data/tenure" |>
+  list.files(recursive = TRUE, pattern = "shp$", full.names = TRUE) |>
+  lapply(read_sf) |>
+  bind_rows() |>
+  mutate(
+    type =
+      ifelse(is.na(FolderPath),
+        "SAPA",
+        unlist(lapply(strsplit(tenure$FolderPath, " "), first))
+      )
+  ) |>
+  group_by(type) |>
+  st_combine()
+
+
+ggplot() +
+  geom_sf(data = area) +
+  geom_sf(
+    data = filter(tenure, st_geometry_type(tenure) == "POLYGON"),
+    aes(fill = type)
+  ) +
+  geom_sf(data = filter(tenure, st_geometry_type(tenure) == "LINESTRING"))
+
+tenure |>
+  filter(st_geometry_type(tenure) == "LINESTRING") |>
+  st_cast() |>
+  ggplot() +
+  geom_sf(aes(fill = type))
+
+tenure |>
+  filter(st_geometry_type(tenure) == "LINESTRING") |>
+  st_combine() |>
+  st_union() |>
+  st_cast() |>
+  ggplot() +
+  geom_sf()
+```
+

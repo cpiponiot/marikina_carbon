@@ -18,9 +18,9 @@ area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
   st_transform(crs = "EPSG:4326")
 ```
 
-## NGP project 
+## NGP project
 
-These plots are from a reforestation project (secondary forests) in Upper Marikina. The plots are xxx ha in size. 
+These plots are from a reforestation project (secondary forests) in Upper Marikina. The plots are circular and 0.0079 ha in size. In 5-m radius subplots, all trees 5 to 20 cm DBH are measured; in 10-m radius subplots, all trees \> 20 cm DBH are measured.
 
 ```{r}
 #| message: false
@@ -70,6 +70,8 @@ df_ngp |>
 
 ## BAMS plots
 
+These are square 20x20m plots.
+
 ```{r}
 #| message: false
 #| warning: false
@@ -103,6 +105,8 @@ df_bams |>
 ```
 
 ## FRA plots
+
+The FRA plots are composed of four 10-m radius plots where all trees \>= xx cm DBH are measured, with 5-m nested subplots where all trees \>= cm DBH are measured.
 
 ```{r}
 #| message: false
@@ -139,6 +143,24 @@ fra |>
   theme_classic()
 ```
 
+## NFI plots 
+
+```{r}
+#| message: false
+#| warning: false
+df_nfi <- bind_rows(
+  "2003" = read_excel("data/inventories/td.03.xlsx"),
+  "2014" = read.csv("data/inventories/td.14.csv"),
+  .id = "year"
+) |>
+  select(year, long, lat, tract, plot, biomass, biomass.fin)
+
+location_nfi <- df_nfi |>
+  group_by(plot = paste(tract, plot, sep = "_")) |>
+  summarise(x = median(long), y = median(lat)) |>
+  mutate(dataset = "nfi")
+```
+
 ## Location of the plots
 
 ```{r}
@@ -161,12 +183,38 @@ sf_all <-
   bind_rows(list(ngp = location_ngp, bams = location_bams), .id = "dataset") |>
   st_as_sf(coords = c("x", "y"), crs = 32651) |> # check which CRS was used!!
   bind_rows(sf_fra) |>
-  st_transform(crs = "EPSG:4326")
+  st_transform(crs = "EPSG:4326") |>
+  bind_rows(st_as_sf(location_nfi, coords = c("x", "y"), crs = 4326))
 ggplot() +
   geom_sf(data = area) +
-  geom_sf(data = sf_all, aes(col = dataset))
+  geom_sf(
+    data = st_crop(sf_all, area),
+    aes(col = toupper(dataset), fill = toupper(dataset))
+  ) +
+  theme_bw() +
+  labs(col = NULL, fill = NULL) +
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
+ggplot() +
+  geom_sf(data = sf_all, aes(col = toupper(dataset), fill = toupper(dataset))) +
+  theme_bw() +
+  labs(col = NULL, fill = NULL) +
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
+  )
 ```
 
+```{r}
+df_all |>
+  filter(dataset != "fra" | grepl("105", plot)) |>
+  ggplot(aes(agb, fill = dataset)) +
+  geom_histogram() +
+  theme_classic() +
+  labs(x = "AGB (Mg/ha)")
+```
 
 # Comparison with biomass maps
 
@@ -175,7 +223,7 @@ ggplot() +
 #| warning: false
 diagnostic <- function(x, y) {
   rmse <- signif(sqrt(mean((x - y)^2, na.rm = TRUE)), 3)
-  mape <- signif(mean(abs((x - y) / x), na.rm = TRUE) * 100, 3)
+  mape <- signif(mean(abs((x - y) / y), na.rm = TRUE) * 100, 3)
   r2 <- signif(cor(x, y, use = "complete.obs")^2, 2)
   bias <- signif(mean(x - y, na.rm = TRUE), 3)
   cat(
@@ -216,7 +264,7 @@ df_all$cci_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
     filter(dataset == df_all$dataset[i] & plot == df_all$plot[i]) |>
     robust_extract(cci[[closest]])
 })
-diagnostic(df_all$agb, df_all$cci_carbon)
+diagnostic(df_all$cci_carbon, df_all$agb)
 ```
 
 ## Global forest watch map
@@ -231,22 +279,37 @@ df_all$gfw_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
     filter(dataset == df_all$dataset[i] & plot == df_all$plot[i]) |>
     robust_extract(gfw)
 })
-diagnostic(df_all$agb, df_all$gfw_carbon)
+diagnostic(df_all$gfw_carbon, df_all$agb)
 ```
 
-## ORNL map
+## GlobBiomass map
 
 ```{r}
 #| message: false
 #| warning: false
-ornl <- list.files("data/biomass/", "aboveground", full.names = TRUE) |>
+glob <- list.files("data/biomass/N40E100_agb/", "agb\\.", full.names = TRUE) |>
   rast()
-df_all$ornl_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
+df_all$glob_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
   sf_all |>
     filter(dataset == df_all$dataset[i] & plot == df_all$plot[i]) |>
-    robust_extract(ornl)
+    robust_extract(glob)
 })
-diagnostic(df_all$agb, df_all$ornl_carbon)
+diagnostic(df_all$glob_carbon, df_all$agb)
+```
+
+## Arnan's map 
+
+```{r}
+#| message: false
+#| warning: false
+phmap <- "data/biomass/agb_ph_2015_rf_tc10masked.tif" |>
+  rast()
+df_all$ph_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
+  sf_all |>
+    filter(dataset == df_all$dataset[i] & plot == df_all$plot[i]) |>
+    robust_extract(phmap)
+})
+diagnostic(df_all$ph_carbon, df_all$agb)
 ```
 
 ## Map choice
@@ -255,16 +318,42 @@ diagnostic(df_all$agb, df_all$ornl_carbon)
 #| message: false
 #| warning: false
 #| fig-width: 10
-#| fig-height: 4
+#| fig-height: 3
+
+map_labs <- c(
+  "cci" = "CCI Biomass", "gfw" = "Harris et al., 2021",
+  "glob" = "GlobBiomass", ph = "Arnan's map"
+)
 df_all |>
   pivot_longer(cols = contains("_carbon")) |>
   filter(!is.na(value)) |>
   mutate(name = gsub("_carbon", "", name)) |>
-  ggplot(aes(agb, value, col = dataset)) +
+  ggplot(aes(agb, value, col = toupper(dataset))) +
   geom_point() +
-  facet_wrap(~name, scale = "free") +
-  labs(x = "Ground-based AGB (Mg/ha)", y = "Remote-sensing AGB (Mg/ha)") +
-  geom_abline(slope = 1, intercept = 0, lty = 2)
+  facet_wrap(~name, labeller = as_labeller(map_labs)) +
+  labs(
+    x = "Ground-based AGB (Mg/ha)", y = "Remote-sensing AGB (Mg/ha)",
+    col = "Dataset"
+  ) +
+  geom_abline(slope = 1, intercept = 0, lty = 2) +
+  coord_equal() +
+  theme_bw()
+```
+
+```{r}
+#| message: false
+#| warning: false
+df_all |>
+  pivot_longer(cols = contains("carbon"), names_to = "map") |>
+  group_by(map) |>
+  summarise(
+    rmse = signif(sqrt(mean((value - agb)^2, na.rm = TRUE)), 3),
+    mape = signif(mean(abs((value - agb) / agb), na.rm = TRUE) * 100, 3),
+    r2 = signif(cor(value, agb, use = "complete.obs")^2, 2),
+    bias = signif(mean(value - agb, na.rm = TRUE), 3)
+  ) |>
+  write.csv("C:/Users/piponiot-laroche/Downloads/metrics.csv",
+            row.names = FALSE)
 ```
 
 The final map chosen is ...

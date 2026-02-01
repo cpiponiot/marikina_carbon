@@ -1,0 +1,134 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(terra)
+library(sf)
+library(randomForest)
+library(tidyverse)
+```
+
+
+# Potential carbon stocks {.unnumbered}
+
+
+## Prepare data
+
+Get AGB values by year in undisturbed forests.
+
+```{r}
+#| message: false
+#| warning: false
+area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+  read_sf() |>
+  st_transform(crs = "EPSG:4326")
+agb_maps <- list.files("data/biomass/", "AGB-MERGED", full.names = TRUE) |>
+  rast() |>
+  mask(area)
+years <- list.files("data/biomass/", "AGB-MERGED") |>
+  strsplit("-") |>
+  lapply(function(x) as.numeric(x[7])) |>
+  unlist()
+tmf_maps <- list.files("data/tmf/", "UMRBPL", full.names = TRUE) |>
+  grep(pattern = paste(years, collapse = "|"), value = TRUE) |>
+  rast() |>
+  # resample to agb resolution
+  resample(agb_maps, method = "modal") |>
+  mask(area)
+names(agb_maps) <- years
+names(tmf_maps) <- gsub("Dec", "", names(tmf_maps))
+coords <- data.frame(crds(agb_maps)[sample(nrow(crds(agb_maps)), 1e4), ])
+
+data <- lapply(list(agb_maps, tmf_maps), function(r) {
+  terra::extract(r, coords, ID = FALSE, xy = TRUE) |>
+    pivot_longer(cols = as.character(years), names_to = "year") |>
+    mutate(year = as.numeric(year))
+}) |>
+  set_names(c("agb", "tmf")) |>
+  bind_rows(.id = "data") |>
+  pivot_wider(
+    id_cols = c("x", "y", "year"),
+    names_from = "data", values_from = "value"
+  )
+```
+
+Explanatory variables
+
+```{r}
+#| message: false
+#| warning: false
+data <- c(
+  "data/srtm/topo_variables.tif",
+  "data/chelsa/climate_variables.tif",
+  "data/wind/UMRBPL_wind-speed_10m.tif",
+  "data/osm/dist_to_road.tif",
+  "data/osm/dist_to_water.tif"
+) |>
+  lapply(function(r) {
+    r |>
+      rast() |>
+      mask(area) |>
+      resample(agb_maps, method = "mean")
+  }) |>
+  rast() |>
+  terra::extract(data[, c("x", "y")], ID = FALSE) |>
+  rename(dist_to_road = elevation.1) |>
+  rename(dist_to_water = elevation.2) |>
+  bind_cols(data)
+```
+
+## Random forest
+
+```{r}
+rf_data <- data |>
+  filter(year == 2022) |>
+  rename(wind = `PHL_wind-speed_10m`) |>
+  select(
+    agb, elevation, slope, aspect, twi, mean_temperature,
+    mean_precipitation, wind, tmf, dist_to_road, dist_to_water
+  ) |>
+  drop_na()
+type <- c("cal", "eval")[1 + rbinom(nrow(rf_data), 1, 0.2)]
+rf_agb <- randomForest(agb ~ .,
+                       data = rf_data[type == "cal", ],
+                       importance = TRUE)
+```
+
+
+```{r}
+predictions <- predict(rf_agb, newdata = rf_data[type == "eval", ])
+errors <- rf_data$agb[type == "eval"] - predictions
+rmse <- sqrt(mean(errors^2))
+print(paste("RMSE:", round(rmse), "Mg/ha"))
+r_squared_oob <- rf_agb$rsq[length(rf_agb$rsq)] * 100
+print(paste("Out-of-Bag R-squared (% Var Explained):",
+            round(r_squared_oob), "%"))
+# Calculate R-squared on the test set
+ss_total <- sum((rf_data$agb[type == "eval"] -
+                   mean(rf_data$agb[type == "eval"]))^2)
+ss_residual <- sum((rf_data$agb[type == "eval"] - predictions)^2)
+r_squared_test <- 1 - (ss_residual / ss_total)
+print(paste("Test Set R-squared:", round(r_squared_test * 100), "%"))
+```
+
+```{r}
+varImpPlot(rf_agb)
+```
+
+```{r}
+partialPlot(rf_agb, x.var = "mean_precipitation",
+            pred.data = rf_data[type == "cal", ])
+partialPlot(rf_agb, x.var = "aspect", pred.data = rf_data[type == "cal", ])
+partialPlot(rf_agb, x.var = "mean_temperature",
+            pred.data = rf_data[type == "cal", ])
+partialPlot(rf_agb, x.var = "elevation", pred.data = rf_data[type == "cal", ])
+partialPlot(rf_agb, x.var = "slope", pred.data = rf_data[type == "cal", ])
+partialPlot(rf_agb, x.var = "twi", pred.data = rf_data[type == "cal", ])
+partialPlot(rf_agb, x.var = "wind", pred.data = rf_data[type == "cal", ])
+partialPlot(rf_agb, x.var = "tmf", pred.data = rf_data[type == "cal", ])
+partialPlot(rf_agb, x.var = "dist_to_road",
+            pred.data = rf_data[type == "cal", ])
+partialPlot(rf_agb, x.var = "dist_to_water",
+            pred.data = rf_data[type == "cal", ])
+```
+
+## Spatial cross validation
