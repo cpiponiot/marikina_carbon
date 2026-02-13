@@ -148,17 +148,128 @@ fra |>
 ```{r}
 #| message: false
 #| warning: false
-df_nfi <- bind_rows(
-  "2003" = read_excel("data/inventories/td.03.xlsx"),
-  "2014" = read.csv("data/inventories/td.14.csv"),
-  .id = "year"
+df_nfi <- read.csv("data/inventories/nfi_agb.csv") |>
+  mutate(dataset = "nfi") |>
+  mutate(plot = paste(tract, plot, sep = "_")) |>
+  select(-tract)
+location_nfi <- bind_rows(
+  read_excel("data/inventories/td.03.xlsx"),
+  read.csv("data/inventories/td.14.csv")
 ) |>
-  select(year, long, lat, tract, plot, biomass, biomass.fin)
-
-location_nfi <- df_nfi |>
-  group_by(plot = paste(tract, plot, sep = "_")) |>
+  mutate(plot = paste(tract, plot, sep = "_")) |>
+  select(plot, long, lat) |>
+  group_by(plot) |>
   summarise(x = median(long), y = median(lat)) |>
   mutate(dataset = "nfi")
+df_nfi <- df_nfi |>
+  inner_join(location_nfi)
+```
+
+### Remove plots classified as non-forest
+
+```{r}
+#| message: false
+#| warning: false
+#| eval: false
+method <- "tmf"
+if (method == "namria") {
+  df_nfi$lc <- "data/LULC/egdmis_landcover2015_luzon_20210712/" |>
+    list.files("\\.shp", full.names = TRUE) |>
+    vect() |>
+    terra::extract(df_nfi[, c("x", "y")]) |>
+    select(agg12)
+  df_nfi |>
+    mutate(forest = !is.na(lc) & grepl("forest", tolower(lc$agg12))) |>
+    select(-lc) |>
+    write.csv("data/inventories/df_nfi.csv", row.names = FALSE)
+} else if (method == "tmf") {
+  for (yr in c("2003", "2014")) {
+    for (coord1 in c("N20", "N10")) {
+      for (coord2 in c("E110", "E120")) {
+        file <- paste0(
+          "data/tmf/JRC_TMF_AnnualChange_v1_", yr,
+          "_ASI_ID76_", coord1, "_", coord2, ".tif"
+        )
+        if (!file.exists(file)) {
+          paste0(
+            "https://ies-ows.jrc.ec.europa.eu/iforce/tmf_v1/download.py?",
+            "type=tile&dataset=AnnualChange_", yr, "&lat=",
+            coord1, "&lon=", coord2
+          ) |>
+            download.file(file, mode = "wb", method = "curl")
+        }
+      }
+    }
+  }
+  tmf03 <- list.files("data/tmf/", "2003", full.names = TRUE) |>
+    grep(pattern = "_N", value = TRUE) |>
+    lapply(rast) |>
+    sprc() |>
+    mosaic()
+  tmf14 <- list.files("data/tmf/", "2014", full.names = TRUE) |>
+    grep(pattern = "_N", value = TRUE) |>
+    lapply(rast) |>
+    sprc() |>
+    mosaic()
+  df_nfi |>
+    mutate(
+      tmf03 = terra::extract(tmf03, df_nfi[, c("x", "y")])$Dec2003,
+      tmf14 = terra::extract(tmf14, df_nfi[, c("x", "y")])$Dec2014
+    ) |>
+    mutate(tmf = ifelse(year == 2003, tmf03, tmf14)) |>
+    mutate(forest = tmf %in% c(1, 2, 4)) |>
+    select(plot, year, x, y, forest) |>
+    write.csv("data/inventories/nfi_forest.csv", row.names = FALSE)
+}
+```
+
+### Climate classification
+
+```{r}
+#| message: false
+#| warning: false
+#| eval: false
+clim <- rast("data/chelsa/climate_variables.tif") |>
+  terra::extract(location_nfi[, c("x", "y")], xy = TRUE) |>
+  select(-ID) |>
+  mutate(plot = location_nfi$plot)
+clim$cluster <-
+  kmeans(
+    scale(clim[, names(rast("data/chelsa/climate_variables.tif"))]),
+    3, 25
+  )$cluster
+# convex hull of upper marikina climate
+area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+  read_sf() |>
+  st_transform(crs = "EPSG:4326")
+umrbpl <- rast("data/chelsa/climate_variables.tif") |>
+  crop(area) |>
+  mask(area) |>
+  values() |>
+  data.frame() |>
+  drop_na()
+hull_idx <- chull(umrbpl$mean_temperature, umrbpl$mean_precipitation)
+hull_idx <- c(hull_idx, hull_idx[1]) # close the polygon
+hull <- umrbpl[hull_idx, ]
+
+clim$inside <- sp::point.in.polygon(
+  clim$mean_temperature, clim$mean_precipitation,
+  hull$mean_temperature, hull$mean_precipitation
+)
+mutate(clim, inside = inside > 0) |>
+  select(plot, inside) |>
+  write.csv(file = "data/inventories/nfi_clim.csv", row.names = FALSE)
+```
+
+
+```{r}
+#| message: false
+#| warning: false
+df_nfi <- df_nfi |>
+  select(-x, -y) |>
+  inner_join(read.csv("data/inventories/nfi_forest.csv")) |>
+  inner_join(read.csv("data/inventories/nfi_clim.csv")) |>
+  filter(forest & inside)
 ```
 
 ## Location of the plots
@@ -169,11 +280,13 @@ location_nfi <- df_nfi |>
 df_fra <- fra |>
   mutate(dataset = "fra", plot = paste(track, plot, sep = "_")) |>
   select(dataset, plot, agb_h) |>
-  rename(agb = agb_h)
+  rename(agb = agb_h) |>
+  subset(grepl("105", plot))
 df_all <- df_ngp |>
   rename(plot = transect) |>
   mutate(dataset = "ngp") |>
   bind_rows(mutate(df_bams, dataset = "bams")) |>
+  bind_rows(select(df_nfi, dataset, year, plot, agb)) |>
   bind_rows(df_fra) |>
   select(-x, -y)
 location_ngp <- df_ngp |>
@@ -185,7 +298,8 @@ sf_all <-
   bind_rows(sf_fra) |>
   st_transform(crs = "EPSG:4326") |>
   bind_rows(st_as_sf(location_nfi, coords = c("x", "y"), crs = 4326))
-ggplot() +
+# within UM
+g1 <- ggplot() +
   geom_sf(data = area) +
   geom_sf(
     data = st_crop(sf_all, area),
@@ -195,10 +309,22 @@ ggplot() +
   labs(col = NULL, fill = NULL) +
   theme(
     panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+    legend.position = "none"
+  )
+g2 <- ggplot(df_all) +
+  geom_histogram(aes(x = agb, fill = toupper(dataset))) +
+  labs(fill = NULL, y = "Number of plots", x = "AGB (Mg/ha)") +
+  theme_bw() +
+  theme(
+    panel.grid = element_blank(),
     axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)
   )
-ggplot() +
-  geom_sf(data = sf_all, aes(col = toupper(dataset), fill = toupper(dataset))) +
+ggpubr::ggarrange(g1, g2, labels = c("a", "b"), widths = c(1.2, 2))
+# NFI
+sf_all |>
+  ggplot() +
+  geom_sf(aes(col = toupper(dataset), fill = toupper(dataset))) +
   theme_bw() +
   labs(col = NULL, fill = NULL) +
   theme(
@@ -209,14 +335,21 @@ ggplot() +
 
 ```{r}
 df_all |>
-  filter(dataset != "fra" | grepl("105", plot)) |>
   ggplot(aes(agb, fill = dataset)) +
-  geom_histogram() +
+  geom_density(alpha = 0.6, col = NA) +
   theme_classic() +
   labs(x = "AGB (Mg/ha)")
 ```
 
 # Comparison with biomass maps
+
+```{r}
+#| message: false
+#| warning: false
+df_all <- df_all |>
+  filter(dataset != "nfi")
+```
+
 
 ```{r}
 #| message: false
@@ -252,12 +385,12 @@ We match the year of the inventory to the closest year of the map.
 ```{r}
 #| message: false
 #| warning: false
-cci <- list.files("data/biomass/", "AGB-MERGED", full.names = TRUE) |>
+cci <- list.files("data/biomass/", "N20E120_ESACCI", full.names = TRUE) |>
   rast()
 names(cci) <- do.call(cbind, strsplit(names(cci), "-"))[7, ]
 
 # check inventory year
-df_all$year <- 2010
+df_all <- mutate(df_all, year = as.numeric(ifelse(is.na(year), 2010, year)))
 df_all$cci_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
   closest <- which.min(abs(as.numeric(names(cci)) - df_all$year[i]))
   sf_all |>
@@ -297,6 +430,20 @@ df_all$glob_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
 diagnostic(df_all$glob_carbon, df_all$agb)
 ```
 
+## GEDI L4B gridded biomass map
+
+```{r}
+#| message: false
+#| warning: false
+gedi <- rast("data/biomass/GEDI04_B_philippines.tif")[[2]]
+df_all$gedi_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
+  sf_all |>
+    filter(dataset == df_all$dataset[i] & plot == df_all$plot[i]) |>
+    robust_extract(gedi)
+})
+diagnostic(df_all$gedi_carbon, df_all$agb)
+```
+
 ## Arnan's map 
 
 ```{r}
@@ -317,19 +464,20 @@ diagnostic(df_all$ph_carbon, df_all$agb)
 ```{r}
 #| message: false
 #| warning: false
-#| fig-width: 10
-#| fig-height: 3
+#| fig-width: 8
+#| fig-height: 8
 
 map_labs <- c(
-  "cci" = "CCI Biomass", "gfw" = "Harris et al., 2021",
-  "glob" = "GlobBiomass", ph = "Arnan's map"
+  "cci" = "CCI Biomass", "gfw" = "GFW",
+  "glob" = "GlobBiomass", "ph" = "Araza",
+  "gedi" = "GEDI L4B"
 )
 df_all |>
   pivot_longer(cols = contains("_carbon")) |>
   filter(!is.na(value)) |>
   mutate(name = gsub("_carbon", "", name)) |>
-  ggplot(aes(agb, value, col = toupper(dataset))) +
-  geom_point() +
+  ggplot(aes(agb, value)) +
+  geom_point(aes(col = toupper(dataset))) +
   facet_wrap(~name, labeller = as_labeller(map_labs)) +
   labs(
     x = "Ground-based AGB (Mg/ha)", y = "Remote-sensing AGB (Mg/ha)",
@@ -337,7 +485,8 @@ df_all |>
   ) +
   geom_abline(slope = 1, intercept = 0, lty = 2) +
   coord_equal() +
-  theme_bw()
+  theme_bw() +
+  theme(legend.position = "inside", legend.position.inside = c(0.8, 0.25))
 ```
 
 ```{r}
@@ -353,7 +502,48 @@ df_all |>
     bias = signif(mean(value - agb, na.rm = TRUE), 3)
   ) |>
   write.csv("C:/Users/piponiot-laroche/Downloads/metrics.csv",
-            row.names = FALSE)
+    row.names = FALSE
+  )
 ```
+
+## Compare reference values for biomass in old-growth forests with maps
+
+```{r}
+namria_closed <- "data/LULC/2020_Land Cover/2020_Land Cover_UMRBPL.shp" |>
+  read_sf() |>
+  filter(CLASS_NAME == "Closed Forest") |>
+  st_transform(4326)
+
+cci <- list.files("data/biomass/", "umrbpl_ESACCI-BIOMASS-L4-AGB-MERGED-",
+  full.names = TRUE
+) |>
+  rast() |>
+  mask(namria_closed)
+gfw <- rast("data/biomass/harris_carbon_2000.tif") |> mask(namria_closed)
+arnan <- rast("data/biomass/agb_ph_2015_rf_tc10masked.tif")[[1]] |>
+  crop(namria_closed) |>
+  mask(namria_closed)
+coords <- data.frame(
+  lon = runif(1e4, ext(namria_closed)[1], ext(namria_closed)[2]),
+  lat = runif(1e4, ext(namria_closed)[3], ext(namria_closed)[4])
+)
+list("cci", "gfw", "arnan") |>
+  lapply(function(nmrast) {
+    terra::extract(get(nmrast), coords, xy = TRUE)[, 2:4] |>
+      set_names("agb", "x", "y") |>
+      mutate(map = nmrast)
+  }) |>
+  bind_rows() |>
+  drop_na() |>
+  ggplot(aes(agb, fill = map)) +
+  geom_density(alpha = 0.6, col = NA) +
+  labs(
+    x = "AGB (Mg/ha)", y = NULL,
+    title = "Distribution of AGB values in pixels classified
+       as 'Closed forests' in NAMRIA map"
+  ) +
+  theme_classic()
+```
+
 
 The final map chosen is ...

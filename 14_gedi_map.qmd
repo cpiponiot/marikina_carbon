@@ -1,0 +1,44 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(sf)
+library(terra)
+library(ggplot2)
+library(tidyterra)
+library(dplyr)
+```
+
+# GEDI L4B gridded biomass {.unnumbered}
+
+```{r}
+#| message: false
+#| warning: false
+#| eval: false
+list.files("data/GEDI_L4B_Gridded_Biomass_V2_1_2299/",
+  pattern = "tif", recursive = TRUE, full.names = TRUE
+) |>
+  rast() |>
+  crop(ext(1.1e7, 1.25e7, 0, 2.5e6)) |>
+  project("EPSG:4326") |>
+  crop(ext(110, 130, 5, 20)) |>
+  writeRaster("data/biomass/GEDI04_B_philippines.tif")
+```
+
+```{r}
+#| message: false
+#| warning: false
+rast("data/biomass/GEDI04_B_philippines.tif")[[2]] |> plot()
+```
+
+```{r}
+#| message: false
+#| warning: false
+area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+  read_sf() |>
+  st_transform(crs = "EPSG:4326")
+rast("data/biomass/GEDI04_B_philippines.tif")[[2]] |>
+  crop(area) |>
+  mask(area) |>
+  plot()
+```
+

@@ -5,6 +5,7 @@ library(terra)
 library(sf)
 library(ggplot2)
 library(knitr)
+library(tidyterra)
 ```
 
 # Forest disturbance history {.unnumbered}
@@ -79,10 +80,13 @@ for (i in seq_len(dim(tmf)[3])) {
 ```{r}
 #| message: false
 #| warning: false
-plot(c(
-  tmf[[which(grepl(2010, names(tmf)))]],
-  tmf[[which(grepl(2024, names(tmf)))]]
-), col = c("darkgreen", "orange", "red", "green", "lightblue", "grey"))
+tmf_years <- tmf[[which(grepl("2010|2015|2020", names(tmf)))]]
+ggplot() +
+  geom_spatraster(data = tmf_years) +
+  facet_wrap(~lyr) +
+  scale_fill_manual(values = c("darkgreen", "orange", "red",
+                               "green", "lightblue", "grey")) +
+  labs(fill = NULL)
 ```
 
 ## Changes in forest area between 1990 and 2024
@@ -91,10 +95,12 @@ plot(c(
 #| message: false
 #| warning: false
 ggplot(data, aes(x = year)) +
+  geom_line(aes(y = Undisturbed, color = "Undisturbed"), size = 0.9) +
   geom_line(aes(y = Degraded, color = "Degraded"), size = 0.9) +
   geom_line(aes(y = Deforested, color = "Deforested"), size = 0.9) +
   geom_line(aes(y = Regrowth, color = "Regrowth"), size = 0.9) +
   scale_color_manual(name = "", values = c(
+    "Undisturbed" = "forestgreen",
     "Degraded" = "orange",
     "Deforested" = "red",
     "Regrowth" = "green"

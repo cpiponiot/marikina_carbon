@@ -8,7 +8,7 @@ library(tidyterra)
 library(dplyr)
 ```
 
-# Biomass map from ESA-CCI {.unnumbered}
+# ESA-CCI biomass project {.unnumbered}
 
 The maps are 100-meter resolution, global aboveground biomass maps produced by the European Space Agency's (ESA) Climate Change Initiative (CCI). These products are based on data from the ESA's C-band (Sentinel-1A and -1B) and the JAXA's L-band Synthetic Aperture Radar (ALOS-2 PALSAR-2), as well as additional information from spaceborne lidar (e.g., NASA's Global Ecosystem Dynamics Investigation Lidar, or GEDI).
 
@@ -33,11 +33,11 @@ for (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {
       "-MERGED-100m-", year, "-fv6.0.tif?download=1"
     )
     path1 <- paste0(
-      "data/CCI/N20E120_ESACCI-BIOMASS-L4-", var,
+      "data/biomass/N20E120_ESACCI-BIOMASS-L4-", var,
       "-MERGED-100m-", year, "-fv6.0.tiff"
     )
     file1 <- paste0(
-      "data/CCI/umrbpl_ESACCI-BIOMASS-L4-", var,
+      "data/biomass/umrbpl_ESACCI-BIOMASS-L4-", var,
       "-MERGED-100m-", year, "-fv6.0.tiff"
     )
     if (!file.exists(file1)) {
@@ -51,7 +51,6 @@ for (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {
   }
 }
 ```
-
 
 ```{r}
 #| message: false

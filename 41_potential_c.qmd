@@ -21,10 +21,13 @@ Get AGB values by year in undisturbed forests.
 area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
-agb_maps <- list.files("data/biomass/", "AGB-MERGED", full.names = TRUE) |>
+agb_maps <- list.files(
+  "data/biomass/", "umrbpl_ESACCI-BIOMASS-L4-AGB-MERGED",
+  full.names = TRUE
+) |>
   rast() |>
   mask(area)
-years <- list.files("data/biomass/", "AGB-MERGED") |>
+years <- list.files("data/biomass/", "umrbpl_ESACCI-BIOMASS-L4-AGB-MERGED") |>
   strsplit("-") |>
   lapply(function(x) as.numeric(x[7])) |>
   unlist()
@@ -89,8 +92,9 @@ rf_data <- data |>
   drop_na()
 type <- c("cal", "eval")[1 + rbinom(nrow(rf_data), 1, 0.2)]
 rf_agb <- randomForest(agb ~ .,
-                       data = rf_data[type == "cal", ],
-                       importance = TRUE)
+  data = rf_data[type == "cal", ],
+  importance = TRUE
+)
 ```
 
 
@@ -100,8 +104,10 @@ errors <- rf_data$agb[type == "eval"] - predictions
 rmse <- sqrt(mean(errors^2))
 print(paste("RMSE:", round(rmse), "Mg/ha"))
 r_squared_oob <- rf_agb$rsq[length(rf_agb$rsq)] * 100
-print(paste("Out-of-Bag R-squared (% Var Explained):",
-            round(r_squared_oob), "%"))
+print(paste(
+  "Out-of-Bag R-squared (% Var Explained):",
+  round(r_squared_oob), "%"
+))
 # Calculate R-squared on the test set
 ss_total <- sum((rf_data$agb[type == "eval"] -
                    mean(rf_data$agb[type == "eval"]))^2)
@@ -115,20 +121,28 @@ varImpPlot(rf_agb)
 ```
 
 ```{r}
-partialPlot(rf_agb, x.var = "mean_precipitation",
-            pred.data = rf_data[type == "cal", ])
+partialPlot(rf_agb,
+  x.var = "mean_precipitation",
+  pred.data = rf_data[type == "cal", ]
+)
 partialPlot(rf_agb, x.var = "aspect", pred.data = rf_data[type == "cal", ])
-partialPlot(rf_agb, x.var = "mean_temperature",
-            pred.data = rf_data[type == "cal", ])
+partialPlot(rf_agb,
+  x.var = "mean_temperature",
+  pred.data = rf_data[type == "cal", ]
+)
 partialPlot(rf_agb, x.var = "elevation", pred.data = rf_data[type == "cal", ])
 partialPlot(rf_agb, x.var = "slope", pred.data = rf_data[type == "cal", ])
 partialPlot(rf_agb, x.var = "twi", pred.data = rf_data[type == "cal", ])
 partialPlot(rf_agb, x.var = "wind", pred.data = rf_data[type == "cal", ])
 partialPlot(rf_agb, x.var = "tmf", pred.data = rf_data[type == "cal", ])
-partialPlot(rf_agb, x.var = "dist_to_road",
-            pred.data = rf_data[type == "cal", ])
-partialPlot(rf_agb, x.var = "dist_to_water",
-            pred.data = rf_data[type == "cal", ])
+partialPlot(rf_agb,
+  x.var = "dist_to_road",
+  pred.data = rf_data[type == "cal", ]
+)
+partialPlot(rf_agb,
+  x.var = "dist_to_water",
+  pred.data = rf_data[type == "cal", ]
+)
 ```
 
 ## Spatial cross validation

@@ -13,10 +13,6 @@ Climate data were obtained from the CHELSA-Bioclim v2.1 database at a spatial re
 #| message: false
 #| warning: false
 #| eval: false
-area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
-  read_sf() |>
-  st_transform(crs = "EPSG:4326")
-
 if (!require(Rchelsa)) {
   remotes::install_git("https://gitlabext.wsl.ch/karger/rchelsa.git")
   library(Rchelsa)
@@ -26,7 +22,7 @@ clim <- lapply(
   function(rs) {
     getChelsa(
       rs,
-      extent = ext(area),
+      extent = ext(c(110, 130, 0, 20)),
       date = "1981-2010", dataset = "chelsa-bioclim"
     )
   }
