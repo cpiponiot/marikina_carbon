@@ -11,7 +11,7 @@ library(ggplot2)
 
 ## Roads
 
-Distance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds. 
+Distance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds.
 
 ```{r}
 #| message: false
@@ -50,10 +50,9 @@ writeRaster(dist_to_roads, "data/osm/dist_to_road.tif")
   plot()
 ```
 
-
 ## Waterways
 
-Distance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds. 
+Distance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds.
 
 ```{r}
 #| message: false
@@ -78,9 +77,8 @@ water_all <- umrbpl_bb |>
 template_raster <- rast("data/srtm/topo_variables.tif")[[1]]
 dist_to_water <- distance(template_raster, water_all$osm_lines)
 if (!dir.exists("data/osm")) dir.create("data/osm")
-writeRaster(dist_to_water, "data/osm/dist_to_water.tif")
+writeRaster(dist_to_water, "data/osm/dist_to_water.tif", overwrite = TRUE)
 ```
-
 
 ```{r}
 #| message: false
@@ -91,4 +89,3 @@ writeRaster(dist_to_water, "data/osm/dist_to_water.tif")
   rast() |>
   plot()
 ```
-

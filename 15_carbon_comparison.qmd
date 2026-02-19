@@ -444,7 +444,7 @@ df_all$gedi_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
 diagnostic(df_all$gedi_carbon, df_all$agb)
 ```
 
-## Arnan's map 
+## Araza map 
 
 ```{r}
 #| message: false
@@ -509,25 +509,32 @@ df_all |>
 ## Compare reference values for biomass in old-growth forests with maps
 
 ```{r}
+#| message: false
+#| warning: false
 namria_closed <- "data/LULC/2020_Land Cover/2020_Land Cover_UMRBPL.shp" |>
   read_sf() |>
   filter(CLASS_NAME == "Closed Forest") |>
   st_transform(4326)
 
-cci <- list.files("data/biomass/", "umrbpl_ESACCI-BIOMASS-L4-AGB-MERGED-",
-  full.names = TRUE
-) |>
+cci <-
+  "data/biomass/umrbpl_ESACCI-BIOMASS-L4-AGB-MERGED-100m-2020-fv6.0.tiff" |>
   rast() |>
+  crop(namria_closed) |>
   mask(namria_closed)
-gfw <- rast("data/biomass/harris_carbon_2000.tif") |> mask(namria_closed)
+gfw <- rast("data/biomass/harris_carbon_2000.tif") |>
+  crop(namria_closed) |>
+  mask(namria_closed)
 arnan <- rast("data/biomass/agb_ph_2015_rf_tc10masked.tif")[[1]] |>
+  crop(namria_closed) |>
+  mask(namria_closed)
+gedi <- rast("data/biomass/GEDI04_B_philippines.tif")[[2]] |>
   crop(namria_closed) |>
   mask(namria_closed)
 coords <- data.frame(
   lon = runif(1e4, ext(namria_closed)[1], ext(namria_closed)[2]),
   lat = runif(1e4, ext(namria_closed)[3], ext(namria_closed)[4])
 )
-list("cci", "gfw", "arnan") |>
+list("cci", "gfw", "arnan", "gedi") |>
   lapply(function(nmrast) {
     terra::extract(get(nmrast), coords, xy = TRUE)[, 2:4] |>
       set_names("agb", "x", "y") |>

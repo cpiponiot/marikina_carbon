@@ -95,61 +95,50 @@
   {
     "objectID": "12_cci_map.html",
     "href": "12_cci_map.html",
-    "title": "Biomass map from ESA-CCI",
+    "title": "ESA-CCI biomass project",
     "section": "",
-    "text": "Data\nThe maps are 100-meter resolution, global aboveground biomass maps produced by the European Space Agency’s (ESA) Climate Change Initiative (CCI). These products are based on data from the ESA’s C-band (Sentinel-1A and -1B) and the JAXA’s L-band Synthetic Aperture Radar (ALOS-2 PALSAR-2), as well as additional information from spaceborne lidar (e.g., NASA’s Global Ecosystem Dynamics Investigation Lidar, or GEDI).\nAccording to their validation protocol, they have a substantial validation dataset in the Philippines.\nCode\nif (!dir.exists(\"data/biomass\")) dir.create(\"data/biomass\")\nu0 &lt;- \"https://dap.ceda.ac.uk/neodc/esacci/biomass/data/agb/maps/v6.0/geotiff/\"\nfor (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {\n  for (var in c(\"AGB\", \"AGB_SD\")) {\n    url1 &lt;- paste0(\n      u0, year, \"/N20E120_ESACCI-BIOMASS-L4-\", var,\n      \"-MERGED-100m-\", year, \"-fv6.0.tif?download=1\"\n    )\n    path1 &lt;- paste0(\n      \"data/CCI/N20E120_ESACCI-BIOMASS-L4-\", var,\n      \"-MERGED-100m-\", year, \"-fv6.0.tiff\"\n    )\n    file1 &lt;- paste0(\n      \"data/CCI/umrbpl_ESACCI-BIOMASS-L4-\", var,\n      \"-MERGED-100m-\", year, \"-fv6.0.tiff\"\n    )\n    if (!file.exists(file1)) {\n      download.file(url1, path1, method = \"curl\")\n      path1 |&gt;\n        rast() |&gt;\n        crop(ext(121, 121.4, 14.5, 14.9)) |&gt;\n        writeRaster(file1)\n      file.remove(path1)\n    }\n  }\n}\nCode\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\nagb &lt;- list.files(\"data/biomass/\", full.names = TRUE) |&gt;\n  grep(pattern = \"AGB-\", value = TRUE) |&gt;\n  rast() |&gt;\n  crop(ext(area)) |&gt;\n  mask(area) |&gt;\n  tidyterra::rename_with(~ sapply(strsplit(.x, \"-\"), function(i) i[7]))\nuncertainty &lt;- list.files(\"data/biomass/\", full.names = TRUE) |&gt;\n  grep(pattern = \"AGB_SD\", value = TRUE) |&gt;\n  rast() |&gt;\n  crop(ext(area)) |&gt;\n  mask(area) |&gt;\n  tidyterra::rename_with(~ sapply(strsplit(.x, \"-\"), function(i) i[7]))\nggplot() +\n  geom_spatraster(data = agb) +\n  facet_wrap(~lyr, nrow = 2) +\n  scale_fill_viridis_c(\"AGB\\n(Mg/ha)\")\n\n\n\n\n\n\n\n\n\nCode\nggplot() +\n  geom_spatraster(data = uncertainty / agb * 100) +\n  facet_wrap(~lyr, nrow = 2) +\n  scale_fill_viridis_c(\"Coefficient of variation (%)\", option = \"magma\")",
+    "text": "Data\nThe maps are 100-meter resolution, global aboveground biomass maps produced by the European Space Agency’s (ESA) Climate Change Initiative (CCI). These products are based on data from the ESA’s C-band (Sentinel-1A and -1B) and the JAXA’s L-band Synthetic Aperture Radar (ALOS-2 PALSAR-2), as well as additional information from spaceborne lidar (e.g., NASA’s Global Ecosystem Dynamics Investigation Lidar, or GEDI).\nAccording to their validation protocol, they have a substantial validation dataset in the Philippines.\nCode\nif (!dir.exists(\"data/biomass\")) dir.create(\"data/biomass\")\nu0 &lt;- \"https://dap.ceda.ac.uk/neodc/esacci/biomass/data/agb/maps/v6.0/geotiff/\"\nfor (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {\n  for (var in c(\"AGB\", \"AGB_SD\")) {\n    url1 &lt;- paste0(\n      u0, year, \"/N20E120_ESACCI-BIOMASS-L4-\", var,\n      \"-MERGED-100m-\", year, \"-fv6.0.tif?download=1\"\n    )\n    path1 &lt;- paste0(\n      \"data/biomass/N20E120_ESACCI-BIOMASS-L4-\", var,\n      \"-MERGED-100m-\", year, \"-fv6.0.tiff\"\n    )\n    file1 &lt;- paste0(\n      \"data/biomass/umrbpl_ESACCI-BIOMASS-L4-\", var,\n      \"-MERGED-100m-\", year, \"-fv6.0.tiff\"\n    )\n    if (!file.exists(file1)) {\n      download.file(url1, path1, method = \"curl\")\n      path1 |&gt;\n        rast() |&gt;\n        crop(ext(121, 121.4, 14.5, 14.9)) |&gt;\n        writeRaster(file1)\n      file.remove(path1)\n    }\n  }\n}\nCode\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\nagb &lt;- list.files(\"data/biomass/\", full.names = TRUE) |&gt;\n  grep(pattern = \"umrbpl\", value = TRUE) |&gt;\n  grep(pattern = \"AGB-\", value = TRUE) |&gt;\n  rast() |&gt;\n  crop(ext(area)) |&gt;\n  mask(area) |&gt;\n  tidyterra::rename_with(~ sapply(strsplit(.x, \"-\"), function(i) i[7]))\nuncertainty &lt;- list.files(\"data/biomass/\", full.names = TRUE) |&gt;\n  grep(pattern = \"umrbpl\", value = TRUE) |&gt;\n  grep(pattern = \"AGB_SD\", value = TRUE) |&gt;\n  rast() |&gt;\n  crop(ext(area)) |&gt;\n  mask(area) |&gt;\n  tidyterra::rename_with(~ sapply(strsplit(.x, \"-\"), function(i) i[7]))\nggplot() +\n  geom_spatraster(data = agb) +\n  facet_wrap(~lyr, nrow = 2) +\n  scale_fill_viridis_c(\"AGB\\n(Mg/ha)\")\n\n\n\n\n\n\n\n\n\nCode\nggplot() +\n  geom_spatraster(data = uncertainty / agb * 100) +\n  facet_wrap(~lyr, nrow = 2) +\n  scale_fill_viridis_c(\"Coefficient of variation (%)\", option = \"magma\")",
     "crumbs": [
       "Forest metrics",
-      "Biomass map from ESA-CCI"
+      "ESA-CCI biomass project"
     ]
   },
   {
     "objectID": "12_cci_map.html#distribution-of-agb-by-tmf-class",
     "href": "12_cci_map.html#distribution-of-agb-by-tmf-class",
-    "title": "Biomass map from ESA-CCI",
+    "title": "ESA-CCI biomass project",
     "section": "Distribution of AGB by TMF class",
     "text": "Distribution of AGB by TMF class\n\n\nCode\ntmf &lt;- list.files(\"data/tmf\", \"UMRBPL\", full.names = TRUE) |&gt;\n  rast() |&gt;\n  crop(area) |&gt;\n  mask(area)\nagb &lt;- resample(agb, tmf, method = \"average\")\n\ndf_tmf &lt;- as.data.frame(tmf, xy = TRUE) |&gt;\n  pivot_longer(\n    cols = matches(\"19|20\"),\n    names_to = \"year\", values_to = \"class\"\n  ) |&gt;\n  mutate(year = gsub(\"Dec\", \"\", year)) |&gt;\n  filter(class != 0)\ndf_tmf$class &lt;- factor(df_tmf$class)\nlevels(df_tmf$class) &lt;- c(\n  \"Undisturbed\", \"Degraded\", \"Deforested\",\n  \"Regrowth\", \"Water\", \"Other\"\n)\ndf_agb &lt;- as.data.frame(agb, xy = TRUE) |&gt;\n  pivot_longer(cols = contains(\"20\"), names_to = \"year\", values_to = \"agb\") |&gt;\n  inner_join(as.data.frame(cellSize(agb, unit = \"ha\"), xy = TRUE))\ndata_all &lt;- inner_join(df_agb, df_tmf)\n\nggplot(data_all) +\n  geom_violin(aes(x = class, y = agb, col = class))",
     "crumbs": [
       "Forest metrics",
-      "Biomass map from ESA-CCI"
+      "ESA-CCI biomass project"
     ]
   },
   {
     "objectID": "12_cci_map.html#agb-stocks-by-tmf-class-through-time",
     "href": "12_cci_map.html#agb-stocks-by-tmf-class-through-time",
-    "title": "Biomass map from ESA-CCI",
+    "title": "ESA-CCI biomass project",
     "section": "AGB stocks by TMF class through time",
     "text": "AGB stocks by TMF class through time\n\n\nCode\ndata_all |&gt;\n  group_by(class, year) |&gt;\n  summarise(agbtot = sum(agb * area)) |&gt;\n  ggplot(aes(fill = class, y = agbtot, x = as.numeric(year))) +\n  geom_bar(position = \"stack\", stat = \"identity\") +\n  labs(y = \"AGB (Mg/ha)\", x = \"Year\") +\n  scale_fill_manual(name = \"\", values = c(\n    \"Undisturbed\" = \"darkgreen\",\n    \"Degraded\" = \"orange\",\n    \"Deforested\" = \"red\",\n    \"Regrowth\" = \"green\",\n    \"Water\" = \"lightblue\",\n    \"Other\" = \"grey\"\n  )) +\n  theme_classic()",
     "crumbs": [
       "Forest metrics",
-      "Biomass map from ESA-CCI"
+      "ESA-CCI biomass project"
     ]
   },
   {
     "objectID": "12_cci_map.html#agb-vs-secondary-forest-age-according-to-tmf",
     "href": "12_cci_map.html#agb-vs-secondary-forest-age-according-to-tmf",
-    "title": "Biomass map from ESA-CCI",
+    "title": "ESA-CCI biomass project",
     "section": "AGB vs secondary forest age (according to TMF)",
     "text": "AGB vs secondary forest age (according to TMF)\nOnly forests marked as secondary:\n\n\nCode\ndf_age &lt;- lapply(unique(df_agb$year), function(yr) {\n  i &lt;- grep(yr, names(tmf)) # nolint\n  tmf_sec_age &lt;- mask(x = tmf[[seq_len(i)]], ifel(tmf[[i]] == 4, 1, NA)) |&gt;\n    app(\\(x) {\n      if (any(!is.na(x) & x != 4)) {\n        length(x) - max(which(x != 4))\n      } else {\n        NA\n      }\n    })\n  as.data.frame(tmf_sec_age, xy = TRUE) |&gt;\n    rename(age = lyr.1) |&gt;\n    inner_join(filter(df_agb, year == yr))\n}) |&gt;\n  bind_rows()\n\nggplot(df_age, aes(x = age, y = agb)) +\n  geom_bin2d(bins = 40) +\n  geom_smooth() +\n  scale_fill_continuous(type = \"viridis\") +\n  theme_bw()",
     "crumbs": [
       "Forest metrics",
-      "Biomass map from ESA-CCI"
+      "ESA-CCI biomass project"
     ]
   },
   {
-    "objectID": "13_ornl_map.html",
-    "href": "13_ornl_map.html",
-    "title": "Harmonised biomass map for the year 2010",
-    "section": "",
-    "text": "Code\nlibrary(terra)\nlibrary(sf)\n\n\nThis map was created by combining multiple data sources on aboveground and belowground biomass from 2010 at a resolution of 300 meters. To be consistent with other maps compared in this section, we only kept the aboveground part. This map’s advantage is that it maps carbon not only in forests, but in other vegetation types as well. A full description of the data is available in Spawn et al. (2020).\n\n\nCode\nif (!dir.exists(\"data/biomass\")) dir.create(\"data/biomass\")\npaste0(\n  \"https://data.ornldaac.earthdata.nasa.gov/protected/global_vegetation/\",\n  \"Global_Maps_C_Density_2010/data/aboveground_biomass_carbon_2010.tif\"\n) |&gt;\n  download.file(\"data/biomass/aboveground_biomass_carbon_2010.tif\", \"curl\")\n\"data/biomass/aboveground_biomass_carbon_2010.tiff\" |&gt;\n  rast() |&gt;\n  crop(c(115, 130, 5, 20)) |&gt;\n  writeRaster(\"data/biomass/aboveground_biomass_carbon_2010.tiff\",\n    overwrite = TRUE\n  )\n\n\n\n\nCode\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\n\"data/biomass/aboveground_biomass_carbon_2010.tiff\" |&gt;\n  rast() |&gt;\n  crop(area) |&gt;\n  plot()\n\n\n\n\n\n\n\n\n\n\n\n\n\nSpawn, Seth A., Clare C. Sullivan, Tyler J. Lark, and Holly K. Gibbs. 2020. “Harmonized global maps of above and belowground biomass carbon density in the year 2010.” Scientific Data 7 (1): 112. https://doi.org/10.1038/s41597-020-0444-4.",
-    "crumbs": [
-      "Forest metrics",
-      "Harmonised biomass map for the year 2010"
-    ]
-  },
-  {
-    "objectID": "14_harris_map.html",
-    "href": "14_harris_map.html",
+    "objectID": "13_harris_map.html",
+    "href": "13_harris_map.html",
     "title": "Harmonised biomass map from Global Forest Watch",
     "section": "",
     "text": "Code\nlibrary(terra)\nlibrary(sf)\n\n\nThe forest carbon map from Harris et al. (2021) is a global, high-resolution (≈30 m) spatial dataset showing annual forest carbon fluxes—that is, where forests are absorbing (sinks) or releasing (sources) carbon by balancing removals into biomass against emissions from deforestation and disturbance from 2001–2019. Here we only used the initial carbon map estimated for the year 2000.\n\n\nCode\nif (!dir.exists(\"data/biomass\")) dir.create(\"data/biomass\")\npaste0(\n  \"https://data-api.globalforestwatch.org/dataset/\",\n  \"whrc_aboveground_woody_biomass_stock_2000/v1.4/download/\",\n  \"geotiff?grid=10/40000&tile_id=20N_120E&pixel_meaning=Mg_ha-1&\",\n  \"x-api-key=2d60cd88-8348-4c0f-a6d5-bd9adb585a8c\"\n) |&gt;\n  download.file(\"data/biomass/harris_carbon_2000.tif\", \"curl\")\n\n\n\n\nCode\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\n\"data/biomass/harris_carbon_2000.tif\" |&gt;\n  rast() |&gt;\n  crop(area) |&gt;\n  plot()\n\n\n\n\n\n\n\n\n\n\n\n\n\nHarris, Nancy L., David A. Gibbs, Alessandro Baccini, Richard A. Birdsey, Sytze de Bruin, Mary Farina, Lola Fatoyinbo, et al. 2021. “Global maps of twenty-first century forest carbon fluxes.” Nature Climate Change 11 (3): 234–40. https://doi.org/10.1038/s41558-020-00976-6.",
@@ -159,11 +148,77 @@
     ]
   },
   {
+    "objectID": "14_gedi_map.html",
+    "href": "14_gedi_map.html",
+    "title": "GEDI L4B gridded biomass",
+    "section": "",
+    "text": "Code\nlibrary(sf)\nlibrary(terra)\nlibrary(ggplot2)\nlibrary(tidyterra)\nlibrary(dplyr)\n\n\n\n\nCode\nlist.files(\"data/GEDI_L4B_Gridded_Biomass_V2_1_2299/\",\n  pattern = \"tif\", recursive = TRUE, full.names = TRUE\n) |&gt;\n  rast() |&gt;\n  crop(ext(1.1e7, 1.25e7, 0, 2.5e6)) |&gt;\n  project(\"EPSG:4326\") |&gt;\n  crop(ext(110, 130, 5, 20)) |&gt;\n  writeRaster(\"data/biomass/GEDI04_B_philippines.tif\")\n\n\n\n\nCode\nrast(\"data/biomass/GEDI04_B_philippines.tif\")[[2]] |&gt; plot()\n\n\n\n\n\n\n\n\n\n\n\nCode\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\nrast(\"data/biomass/GEDI04_B_philippines.tif\")[[2]] |&gt;\n  crop(area) |&gt;\n  mask(area) |&gt;\n  plot()",
+    "crumbs": [
+      "Forest metrics",
+      "GEDI L4B gridded biomass"
+    ]
+  },
+  {
     "objectID": "15_carbon_comparison.html",
     "href": "15_carbon_comparison.html",
     "title": "Comparing maps",
     "section": "",
-    "text": "NGP project\nThese plots are from a reforestation project (secondary forests) in Upper Marikina. The plots are xxx ha in size.\nCode\n# NGP project\nngp &lt;- list.files(\"data/inventories/\", \"NGP\", full.names = TRUE) |&gt;\n  read_docx() |&gt;\n  docx_extract_tbl(1) |&gt;\n  set_names(c(\n    \"plot\",\n    paste0(rep(c(\"agb\", \"agc\"), 2), rep(c(\"_h\", \"\"), each = 2)))) |&gt; \n  filter(!grepl(\"Average|Transect\", plot)) |&gt;\n  mutate(plot = paste0(rep(c(1:23, 27), each = 3), \"_\", rep(1:3, 24))) |&gt;\n  mutate(across(contains(\"ag\"), function(x) {\n    ifelse(is.na(as.numeric(x)), 0, as.numeric(x))\n  }))\n\nlocation_ngp &lt;-\n  read_excel(\"data/inventories/Carbon Stock and Sequestration Data.xlsx\",\n             sheet = \"NGP_Carbon Assessment\", range = \"B3:E84\"\n  ) |&gt;\n  set_names(c(\"plot\", \"x\", \"y\", \"elev\")) |&gt;\n  mutate(transect = rep(1:27, each = 3)) |&gt;\n  mutate(plot = paste(transect, plot, sep = \"_\")) |&gt;\n  group_by(transect) |&gt;\n  # correct problematic x and y values\n  mutate(\n    x = ifelse(abs(x - median(x)) &gt; 1e4, median(x), x),\n    y = ifelse(abs(y - median(y)) &gt; 1e4, median(y), y)\n  )\n\ndf_ngp &lt;- left_join(ngp, location_ngp) |&gt;\n  separate(plot, c(\"transect\", \"plot\")) |&gt;\n  group_by(transect) |&gt;\n  summarise(agb = mean(agb_h), x = round(mean(x)), y = round(mean(y)))\nsf_ngp &lt;- df_ngp |&gt;\n  st_as_sf(coords = c(\"x\", \"y\"), crs = 32651) |&gt; # check which CRS was used!!\n  st_transform(crs = \"EPSG:4326\")\n\ndf_ngp |&gt; \n  ggplot(aes(agb)) + \n  geom_histogram() + \n  labs(x = \"Aboveground biomass density (Mg/ha)\") +\n  theme_classic()",
+    "text": "NGP project\nThese plots are from a reforestation project (secondary forests) in Upper Marikina. The plots are circular and 0.0079 ha in size. In 5-m radius subplots, all trees 5 to 20 cm DBH are measured; in 10-m radius subplots, all trees &gt; 20 cm DBH are measured.\nCode\n# NGP project\nngp &lt;- list.files(\"data/inventories/\", \"NGP\", full.names = TRUE) |&gt;\n  read_docx() |&gt;\n  docx_extract_tbl(1) |&gt;\n  set_names(c(\n    \"plot\",\n    paste0(rep(c(\"agb\", \"agc\"), 2), rep(c(\"_h\", \"\"), each = 2))\n  )) |&gt;\n  filter(!grepl(\"Average|Transect\", plot)) |&gt;\n  mutate(plot = paste0(rep(c(1:23, 27), each = 3), \"_\", rep(1:3, 24))) |&gt;\n  mutate(across(contains(\"ag\"), function(x) {\n    ifelse(is.na(as.numeric(x)), 0, as.numeric(x))\n  }))\n\nlocation_ngp &lt;-\n  read_excel(\"data/inventories/Carbon Stock and Sequestration Data.xlsx\",\n    sheet = \"NGP_Carbon Assessment\", range = \"B3:E84\"\n  ) |&gt;\n  set_names(c(\"plot\", \"x\", \"y\", \"elev\")) |&gt;\n  mutate(transect = rep(1:27, each = 3)) |&gt;\n  mutate(plot = paste(transect, plot, sep = \"_\")) |&gt;\n  group_by(transect) |&gt;\n  # correct problematic x and y values\n  mutate(\n    x = ifelse(abs(x - median(x)) &gt; 1e4, median(x), x),\n    y = ifelse(abs(y - median(y)) &gt; 1e4, median(y), y)\n  )\n\ndf_ngp &lt;- left_join(ngp, location_ngp) |&gt;\n  separate(plot, c(\"transect\", \"plot\")) |&gt;\n  group_by(transect) |&gt;\n  summarise(agb = mean(agb_h), x = round(mean(x)), y = round(mean(y)))\nsf_ngp &lt;- df_ngp |&gt;\n  st_as_sf(coords = c(\"x\", \"y\"), crs = 32651) |&gt; # check which CRS was used!!\n  st_transform(crs = \"EPSG:4326\")\n\ndf_ngp |&gt;\n  ggplot(aes(agb)) +\n  geom_histogram() +\n  labs(x = \"Aboveground biomass density (Mg/ha)\") +\n  theme_classic()",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#bams-plots",
+    "href": "15_carbon_comparison.html#bams-plots",
+    "title": "Comparing maps",
+    "section": "BAMS plots",
+    "text": "BAMS plots\nThese are square 20x20m plots.\n\n\nCode\n# BAMS plots\nbams &lt;- list.files(\"data/inventories/\", \"BAMS\", full.names = TRUE) |&gt;\n  read_docx() |&gt;\n  docx_extract_tbl(1) |&gt;\n  set_names(c(\n    \"plot\",\n    paste0(rep(c(\"agb\", \"agc\"), 2), rep(c(\"_h\", \"\"), each = 2))\n  )) |&gt;\n  mutate(across(contains(\"ag\"), as.numeric))\nlocation_bams &lt;-\n  read_excel(\"data/inventories/Carbon Stock and Sequestration Data.xlsx\",\n    sheet = \"BAMS_Data\", range = \"A2:C38\"\n  ) |&gt;\n  rename_with(tolower) |&gt;\n  mutate(plot = as.character(rep(1:9, each = 4))) |&gt;\n  separate(coordinates, c(\"x\", \"y\")) |&gt;\n  mutate(across(c(\"x\", \"y\"), as.numeric)) |&gt;\n  group_by(plot) |&gt;\n  summarise(x = mean(x), y = mean(y))\ndf_bams &lt;- left_join(bams, location_bams) |&gt;\n  select(plot, x, y, agb_h) |&gt;\n  rename(agb = agb_h)\ndf_bams |&gt;\n  ggplot(aes(agb)) +\n  geom_histogram() +\n  labs(x = \"Aboveground biomass density (Mg/ha)\") +\n  theme_classic()",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#fra-plots",
+    "href": "15_carbon_comparison.html#fra-plots",
+    "title": "Comparing maps",
+    "section": "FRA plots",
+    "text": "FRA plots\nThe FRA plots are composed of four 10-m radius plots where all trees &gt;= xx cm DBH are measured, with 5-m nested subplots where all trees &gt;= cm DBH are measured.\n\n\nCode\nfra &lt;- list.files(\"data/inventories/\", \"FRA\", full.names = TRUE) |&gt;\n  read_docx() |&gt;\n  docx_extract_tbl(1) |&gt;\n  set_names(c(\n    \"track\", \"plot\",\n    paste0(rep(c(\"agb\", \"agc\"), 2), rep(c(\"_h\", \"\"), each = 2))\n  )) |&gt;\n  mutate(across(1:6, as.numeric)) |&gt;\n  filter(!is.na(plot)) |&gt;\n  fill(track, .direction = \"down\")\n## FRA plots\nsf_fra &lt;- st_read(\"data/inventories/Subplots_Tract105/Subplots_Tract105.shp\") |&gt;\n  mutate(dataset = \"fra\") |&gt;\n  mutate(plot = paste0(\"105_\", gsub(\"Plot \", \"\", PLOT)))\n\n\nReading layer `Subplots_Tract105' from data source \n  `D:\\github\\marikina_carbon\\data\\inventories\\Subplots_Tract105\\Subplots_Tract105.shp' \n  using driver `ESRI Shapefile'\nSimple feature collection with 4 features and 3 fields\nGeometry type: POLYGON\nDimension:     XY\nBounding box:  xmin: 311861.2 ymin: 1631644 xmax: 312383.6 ymax: 1632167\nProjected CRS: WGS 84 / UTM zone 51N\n\n\nCode\nfra |&gt;\n  ggplot(aes(agb_h)) +\n  geom_histogram() +\n  geom_vline(xintercept = median(fra$agb_h), lty = 2) +\n  annotate(\n    geom = \"text\", x = median(fra$agb_h) + 50, y = 10, angle = 90,\n    label = paste(\"Median:\", round(median(fra$agb_h)))\n  ) +\n  geom_vline(xintercept = mean(fra$agb_h), lty = 2) +\n  annotate(\n    geom = \"text\", x = mean(fra$agb_h) + 50, y = 10, angle = 90,\n    label = paste(\"Mean:\", round(mean(fra$agb_h)))\n  ) +\n  labs(x = \"Aboveground biomass density (Mg/ha)\") +\n  theme_classic()",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#nfi-plots",
+    "href": "15_carbon_comparison.html#nfi-plots",
+    "title": "Comparing maps",
+    "section": "NFI plots",
+    "text": "NFI plots\n\n\nCode\ndf_nfi &lt;- read.csv(\"data/inventories/nfi_agb.csv\") |&gt;\n  mutate(dataset = \"nfi\") |&gt;\n  mutate(plot = paste(tract, plot, sep = \"_\")) |&gt;\n  select(-tract)\nlocation_nfi &lt;- bind_rows(\n  read_excel(\"data/inventories/td.03.xlsx\"),\n  read.csv(\"data/inventories/td.14.csv\")\n) |&gt;\n  mutate(plot = paste(tract, plot, sep = \"_\")) |&gt;\n  select(plot, long, lat) |&gt;\n  group_by(plot) |&gt;\n  summarise(x = median(long), y = median(lat)) |&gt;\n  mutate(dataset = \"nfi\")\ndf_nfi &lt;- df_nfi |&gt;\n  inner_join(location_nfi)\n\n\n\nRemove plots classified as non-forest\n\n\nCode\nmethod &lt;- \"tmf\"\nif (method == \"namria\") {\n  df_nfi$lc &lt;- \"data/LULC/egdmis_landcover2015_luzon_20210712/\" |&gt;\n    list.files(\"\\\\.shp\", full.names = TRUE) |&gt;\n    vect() |&gt;\n    terra::extract(df_nfi[, c(\"x\", \"y\")]) |&gt;\n    select(agg12)\n  df_nfi |&gt;\n    mutate(forest = !is.na(lc) & grepl(\"forest\", tolower(lc$agg12))) |&gt;\n    select(-lc) |&gt;\n    write.csv(\"data/inventories/df_nfi.csv\", row.names = FALSE)\n} else if (method == \"tmf\") {\n  for (yr in c(\"2003\", \"2014\")) {\n    for (coord1 in c(\"N20\", \"N10\")) {\n      for (coord2 in c(\"E110\", \"E120\")) {\n        file &lt;- paste0(\n          \"data/tmf/JRC_TMF_AnnualChange_v1_\", yr,\n          \"_ASI_ID76_\", coord1, \"_\", coord2, \".tif\"\n        )\n        if (!file.exists(file)) {\n          paste0(\n            \"https://ies-ows.jrc.ec.europa.eu/iforce/tmf_v1/download.py?\",\n            \"type=tile&dataset=AnnualChange_\", yr, \"&lat=\",\n            coord1, \"&lon=\", coord2\n          ) |&gt;\n            download.file(file, mode = \"wb\", method = \"curl\")\n        }\n      }\n    }\n  }\n  tmf03 &lt;- list.files(\"data/tmf/\", \"2003\", full.names = TRUE) |&gt;\n    grep(pattern = \"_N\", value = TRUE) |&gt;\n    lapply(rast) |&gt;\n    sprc() |&gt;\n    mosaic()\n  tmf14 &lt;- list.files(\"data/tmf/\", \"2014\", full.names = TRUE) |&gt;\n    grep(pattern = \"_N\", value = TRUE) |&gt;\n    lapply(rast) |&gt;\n    sprc() |&gt;\n    mosaic()\n  df_nfi |&gt;\n    mutate(\n      tmf03 = terra::extract(tmf03, df_nfi[, c(\"x\", \"y\")])$Dec2003,\n      tmf14 = terra::extract(tmf14, df_nfi[, c(\"x\", \"y\")])$Dec2014\n    ) |&gt;\n    mutate(tmf = ifelse(year == 2003, tmf03, tmf14)) |&gt;\n    mutate(forest = tmf %in% c(1, 2, 4)) |&gt;\n    select(plot, year, x, y, forest) |&gt;\n    write.csv(\"data/inventories/nfi_forest.csv\", row.names = FALSE)\n}\n\n\n\n\nClimate classification\n\n\nCode\nclim &lt;- rast(\"data/chelsa/climate_variables.tif\") |&gt;\n  terra::extract(location_nfi[, c(\"x\", \"y\")], xy = TRUE) |&gt;\n  select(-ID) |&gt;\n  mutate(plot = location_nfi$plot)\nclim$cluster &lt;-\n  kmeans(\n    scale(clim[, names(rast(\"data/chelsa/climate_variables.tif\"))]),\n    3, 25\n  )$cluster\n# convex hull of upper marikina climate\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\numrbpl &lt;- rast(\"data/chelsa/climate_variables.tif\") |&gt;\n  crop(area) |&gt;\n  mask(area) |&gt;\n  values() |&gt;\n  data.frame() |&gt;\n  drop_na()\nhull_idx &lt;- chull(umrbpl$mean_temperature, umrbpl$mean_precipitation)\nhull_idx &lt;- c(hull_idx, hull_idx[1]) # close the polygon\nhull &lt;- umrbpl[hull_idx, ]\n\nclim$inside &lt;- sp::point.in.polygon(\n  clim$mean_temperature, clim$mean_precipitation,\n  hull$mean_temperature, hull$mean_precipitation\n)\nmutate(clim, inside = inside &gt; 0) |&gt;\n  select(plot, inside) |&gt;\n  write.csv(file = \"data/inventories/nfi_clim.csv\", row.names = FALSE)\n\n\n\n\nCode\ndf_nfi &lt;- df_nfi |&gt;\n  select(-x, -y) |&gt;\n  inner_join(read.csv(\"data/inventories/nfi_forest.csv\")) |&gt;\n  inner_join(read.csv(\"data/inventories/nfi_clim.csv\")) |&gt;\n  filter(forest & inside)",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#location-of-the-plots",
+    "href": "15_carbon_comparison.html#location-of-the-plots",
+    "title": "Comparing maps",
+    "section": "Location of the plots",
+    "text": "Location of the plots\n\n\nCode\ndf_fra &lt;- fra |&gt;\n  mutate(dataset = \"fra\", plot = paste(track, plot, sep = \"_\")) |&gt;\n  select(dataset, plot, agb_h) |&gt;\n  rename(agb = agb_h) |&gt;\n  subset(grepl(\"105\", plot))\ndf_all &lt;- df_ngp |&gt;\n  rename(plot = transect) |&gt;\n  mutate(dataset = \"ngp\") |&gt;\n  bind_rows(mutate(df_bams, dataset = \"bams\")) |&gt;\n  bind_rows(select(df_nfi, dataset, year, plot, agb)) |&gt;\n  bind_rows(df_fra) |&gt;\n  select(-x, -y)\nlocation_ngp &lt;- df_ngp |&gt;\n  select(transect, x, y) |&gt;\n  rename(plot = transect)\nsf_all &lt;-\n  bind_rows(list(ngp = location_ngp, bams = location_bams), .id = \"dataset\") |&gt;\n  st_as_sf(coords = c(\"x\", \"y\"), crs = 32651) |&gt; # check which CRS was used!!\n  bind_rows(sf_fra) |&gt;\n  st_transform(crs = \"EPSG:4326\") |&gt;\n  bind_rows(st_as_sf(location_nfi, coords = c(\"x\", \"y\"), crs = 4326))\n# within UM\ng1 &lt;- ggplot() +\n  geom_sf(data = area) +\n  geom_sf(\n    data = st_crop(sf_all, area),\n    aes(col = toupper(dataset), fill = toupper(dataset))\n  ) +\n  theme_bw() +\n  labs(col = NULL, fill = NULL) +\n  theme(\n    panel.grid = element_blank(),\n    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),\n    legend.position = \"none\"\n  )\ng2 &lt;- ggplot(df_all) +\n  geom_histogram(aes(x = agb, fill = toupper(dataset))) +\n  labs(fill = NULL, y = \"Number of plots\", x = \"AGB (Mg/ha)\") +\n  theme_bw() +\n  theme(\n    panel.grid = element_blank(),\n    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)\n  )\nggpubr::ggarrange(g1, g2, labels = c(\"a\", \"b\"), widths = c(1.2, 2))\n\n\n\n\n\n\n\n\n\nCode\n# NFI\nsf_all |&gt;\n  ggplot() +\n  geom_sf(aes(col = toupper(dataset), fill = toupper(dataset))) +\n  theme_bw() +\n  labs(col = NULL, fill = NULL) +\n  theme(\n    panel.grid = element_blank(),\n    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)\n  )\n\n\n\n\n\n\n\n\n\n\n\nCode\ndf_all |&gt;\n  ggplot(aes(agb, fill = dataset)) +\n  geom_density(alpha = 0.6, col = NA) +\n  theme_classic() +\n  labs(x = \"AGB (Mg/ha)\")",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#cci-maps",
+    "href": "15_carbon_comparison.html#cci-maps",
+    "title": "Comparing maps",
+    "section": "CCI maps",
+    "text": "CCI maps\nWe match the year of the inventory to the closest year of the map.\n\n\nCode\ncci &lt;- list.files(\"data/biomass/\", \"N20E120_ESACCI\", full.names = TRUE) |&gt;\n  rast()\nnames(cci) &lt;- do.call(cbind, strsplit(names(cci), \"-\"))[7, ]\n\n# check inventory year\ndf_all &lt;- mutate(df_all, year = as.numeric(ifelse(is.na(year), 2010, year)))\ndf_all$cci_carbon &lt;- sapply(seq_len(nrow(df_all)), function(i) {\n  closest &lt;- which.min(abs(as.numeric(names(cci)) - df_all$year[i]))\n  sf_all |&gt;\n    filter(dataset == df_all$dataset[i] & plot == df_all$plot[i]) |&gt;\n    robust_extract(cci[[closest]])\n})\ndiagnostic(df_all$cci_carbon, df_all$agb)\n\n\nRMSE: 107 Mg/ha\nMAPE: 158 %\nR²: 0.095 \nBias: -41 Mg/ha",
     "crumbs": [
       "Forest metrics",
       "Comparing maps"
@@ -174,18 +229,40 @@
     "href": "15_carbon_comparison.html#global-forest-watch-map",
     "title": "Comparing maps",
     "section": "Global forest watch map",
-    "text": "Global forest watch map\n\n\nCode\ngfw &lt;- list.files(\"data/biomass/\", \"harris\", full.names = TRUE) |&gt;\n  rast()\ndf_all$gfw_carbon &lt;- sapply(seq_len(nrow(df_all)), function(i) {\n  sf_all |&gt; \n    filter(dataset==df_all$dataset[i] & plot==df_all$plot[i]) |&gt; \n    robust_extract(gfw)\n})\ndiagnostic(df_all$agb, df_all$gfw_carbon)\n\n\nRMSE: 127 Mg/ha\nMAPE: 573 %\nR²: 0.14 \nBias: -57.4 Mg/ha",
+    "text": "Global forest watch map\n\n\nCode\ngfw &lt;- list.files(\"data/biomass/\", \"harris\", full.names = TRUE) |&gt;\n  rast()\ndf_all$gfw_carbon &lt;- sapply(seq_len(nrow(df_all)), function(i) {\n  sf_all |&gt;\n    filter(dataset == df_all$dataset[i] & plot == df_all$plot[i]) |&gt;\n    robust_extract(gfw)\n})\ndiagnostic(df_all$gfw_carbon, df_all$agb)\n\n\nRMSE: 127 Mg/ha\nMAPE: 573 %\nR²: 0.14 \nBias: 57.4 Mg/ha",
     "crumbs": [
       "Forest metrics",
       "Comparing maps"
     ]
   },
   {
-    "objectID": "15_carbon_comparison.html#ornl-map",
-    "href": "15_carbon_comparison.html#ornl-map",
+    "objectID": "15_carbon_comparison.html#globbiomass-map",
+    "href": "15_carbon_comparison.html#globbiomass-map",
     "title": "Comparing maps",
-    "section": "ORNL map",
-    "text": "ORNL map\n\n\nCode\nornl &lt;- list.files(\"data/biomass/\", \"aboveground\", full.names = TRUE) |&gt;\n  rast()\ndf_all$ornl_carbon &lt;- sapply(seq_len(nrow(df_all)), function(i) {\n  sf_all |&gt; \n    filter(dataset==df_all$dataset[i] & plot==df_all$plot[i]) |&gt; \n    robust_extract(ornl)\n})\ndiagnostic(df_all$agb, df_all$ornl_carbon)\n\n\nRMSE: 339 Mg/ha\nMAPE: 1800 %\nR²: 0.033 \nBias: -290 Mg/ha",
+    "section": "GlobBiomass map",
+    "text": "GlobBiomass map\n\n\nCode\nglob &lt;- list.files(\"data/biomass/N40E100_agb/\", \"agb\\\\.\", full.names = TRUE) |&gt;\n  rast()\ndf_all$glob_carbon &lt;- sapply(seq_len(nrow(df_all)), function(i) {\n  sf_all |&gt;\n    filter(dataset == df_all$dataset[i] & plot == df_all$plot[i]) |&gt;\n    robust_extract(glob)\n})\ndiagnostic(df_all$glob_carbon, df_all$agb)\n\n\nRMSE: 109 Mg/ha\nMAPE: 356 %\nR²: 0.019 \nBias: -21.1 Mg/ha",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#gedi-l4b-gridded-biomass-map",
+    "href": "15_carbon_comparison.html#gedi-l4b-gridded-biomass-map",
+    "title": "Comparing maps",
+    "section": "GEDI L4B gridded biomass map",
+    "text": "GEDI L4B gridded biomass map\n\n\nCode\ngedi &lt;- rast(\"data/biomass/GEDI04_B_philippines.tif\")[[2]]\ndf_all$gedi_carbon &lt;- sapply(seq_len(nrow(df_all)), function(i) {\n  sf_all |&gt;\n    filter(dataset == df_all$dataset[i] & plot == df_all$plot[i]) |&gt;\n    robust_extract(gedi)\n})\ndiagnostic(df_all$gedi_carbon, df_all$agb)\n\n\nRMSE: 120 Mg/ha\nMAPE: 423 %\nR²: 0.0058 \nBias: -24.5 Mg/ha",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#araza-map",
+    "href": "15_carbon_comparison.html#araza-map",
+    "title": "Comparing maps",
+    "section": "Araza map",
+    "text": "Araza map\n\n\nCode\nphmap &lt;- \"data/biomass/agb_ph_2015_rf_tc10masked.tif\" |&gt;\n  rast()\ndf_all$ph_carbon &lt;- sapply(seq_len(nrow(df_all)), function(i) {\n  sf_all |&gt;\n    filter(dataset == df_all$dataset[i] & plot == df_all$plot[i]) |&gt;\n    robust_extract(phmap)\n})\ndiagnostic(df_all$ph_carbon, df_all$agb)\n\n\nRMSE: 103 Mg/ha\nMAPE: 601 %\nR²: 0.18 \nBias: 65.9 Mg/ha",
     "crumbs": [
       "Forest metrics",
       "Comparing maps"
@@ -196,7 +273,18 @@
     "href": "15_carbon_comparison.html#map-choice",
     "title": "Comparing maps",
     "section": "Map choice",
-    "text": "Map choice\n\n\nCode\ndf_all |&gt;\n  pivot_longer(cols = contains(\"_carbon\")) |&gt;\n  filter(!is.na(value)) |&gt; \n  mutate(name = gsub(\"_carbon\", \"\", name)) |&gt;\n  ggplot(aes(agb, value, col=dataset)) +\n  geom_point() +\n  facet_wrap(~name, scale = \"free\") +\n  labs(x = \"Ground-based AGB (Mg/ha)\", y = \"Remote-sensing AGB (Mg/ha)\") +\n  geom_abline(slope = 1, intercept = 0, lty = 2)\n\n\n\n\n\n\n\n\n\nThe final map chosen is …",
+    "text": "Map choice\n\n\nCode\nmap_labs &lt;- c(\n  \"cci\" = \"CCI Biomass\", \"gfw\" = \"GFW\",\n  \"glob\" = \"GlobBiomass\", \"ph\" = \"Araza\",\n  \"gedi\" = \"GEDI L4B\"\n)\ndf_all |&gt;\n  pivot_longer(cols = contains(\"_carbon\")) |&gt;\n  filter(!is.na(value)) |&gt;\n  mutate(name = gsub(\"_carbon\", \"\", name)) |&gt;\n  ggplot(aes(agb, value)) +\n  geom_point(aes(col = toupper(dataset))) +\n  facet_wrap(~name, labeller = as_labeller(map_labs)) +\n  labs(\n    x = \"Ground-based AGB (Mg/ha)\", y = \"Remote-sensing AGB (Mg/ha)\",\n    col = \"Dataset\"\n  ) +\n  geom_abline(slope = 1, intercept = 0, lty = 2) +\n  coord_equal() +\n  theme_bw() +\n  theme(legend.position = \"inside\", legend.position.inside = c(0.8, 0.25))\n\n\n\n\n\n\n\n\n\n\n\nCode\ndf_all |&gt;\n  pivot_longer(cols = contains(\"carbon\"), names_to = \"map\") |&gt;\n  group_by(map) |&gt;\n  summarise(\n    rmse = signif(sqrt(mean((value - agb)^2, na.rm = TRUE)), 3),\n    mape = signif(mean(abs((value - agb) / agb), na.rm = TRUE) * 100, 3),\n    r2 = signif(cor(value, agb, use = \"complete.obs\")^2, 2),\n    bias = signif(mean(value - agb, na.rm = TRUE), 3)\n  ) |&gt;\n  write.csv(\"C:/Users/piponiot-laroche/Downloads/metrics.csv\",\n    row.names = FALSE\n  )",
+    "crumbs": [
+      "Forest metrics",
+      "Comparing maps"
+    ]
+  },
+  {
+    "objectID": "15_carbon_comparison.html#compare-reference-values-for-biomass-in-old-growth-forests-with-maps",
+    "href": "15_carbon_comparison.html#compare-reference-values-for-biomass-in-old-growth-forests-with-maps",
+    "title": "Comparing maps",
+    "section": "Compare reference values for biomass in old-growth forests with maps",
+    "text": "Compare reference values for biomass in old-growth forests with maps\n\n\nCode\nnamria_closed &lt;- \"data/LULC/2020_Land Cover/2020_Land Cover_UMRBPL.shp\" |&gt;\n  read_sf() |&gt;\n  filter(CLASS_NAME == \"Closed Forest\") |&gt;\n  st_transform(4326)\n\ncci &lt;- \n  \"data/biomass/umrbpl_ESACCI-BIOMASS-L4-AGB-MERGED-100m-2020-fv6.0.tiff\" |&gt;\n  rast() |&gt; crop(namria_closed) |&gt; mask(namria_closed)\ngfw &lt;- rast(\"data/biomass/harris_carbon_2000.tif\") |&gt; \n  crop(namria_closed) |&gt; mask(namria_closed)\narnan &lt;- rast(\"data/biomass/agb_ph_2015_rf_tc10masked.tif\")[[1]] |&gt;\n  crop(namria_closed) |&gt; mask(namria_closed)\ngedi &lt;- rast(\"data/biomass/GEDI04_B_philippines.tif\")[[2]] |&gt;\n  crop(namria_closed) |&gt; mask(namria_closed)\ncoords &lt;- data.frame(\n  lon = runif(1e4, ext(namria_closed)[1], ext(namria_closed)[2]),\n  lat = runif(1e4, ext(namria_closed)[3], ext(namria_closed)[4])\n)\nlist(\"cci\", \"gfw\", \"arnan\", \"gedi\") |&gt;\n  lapply(function(nmrast) {\n    terra::extract(get(nmrast), coords, xy = TRUE)[, 2:4] |&gt;\n      set_names(\"agb\", \"x\", \"y\") |&gt;\n      mutate(map = nmrast)\n  }) |&gt; bind_rows() |&gt; drop_na() |&gt;\n  ggplot(aes(agb, fill = map)) +\n  geom_density(alpha = 0.6, col = NA) +\n  labs(x = \"AGB (Mg/ha)\", y = NULL,\n       title = \"Distribution of AGB values in pixels classified\n       as 'Closed forests' in NAMRIA map\") +\n  theme_classic()\n\n\n\n\n\n\n\n\n\nThe final map chosen is …",
     "crumbs": [
       "Forest metrics",
       "Comparing maps"
@@ -228,7 +316,7 @@
     "href": "22_climate.html",
     "title": "Climate variables",
     "section": "",
-    "text": "Code\nlibrary(terra)\nlibrary(sf)\n\n\nClimate data were obtained from the CHELSA-Bioclim v2.1 database at a spatial resolution of 1 km (Brun et al. 2022). We extracted mean annual temperature (BIO1, in °C) and mean annual precipitation (BIO12, in mm/year), both calculated as long-term averages over the 1981–2010 reference period.\n\n\nCode\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\n\nif (!require(Rchelsa)) {\n  remotes::install_git(\"https://gitlabext.wsl.ch/karger/rchelsa.git\")\n  library(Rchelsa)\n}\nclim &lt;- lapply(\n  c(\"bio01\", \"bio12\"),\n  function(rs) {\n    getChelsa(\n      rs,\n      extent = ext(area),\n      date = \"1981-2010\", dataset = \"chelsa-bioclim\"\n    )\n  }\n) |&gt;\n  rast()\nnames(clim) &lt;- c(\"mean_temperature\", \"mean_precipitation\")\n\nif (!dir.exists(\"data/chelsa\")) dir.create(\"data/chelsa\")\nwriteRaster(clim, file = \"data/chelsa/climate_variables.tif\", overwrite = TRUE)\n\n\n\n\nCode\n\"data/chelsa/climate_variables.tif\" |&gt;\n  rast() |&gt;\n  plot()\n\n\n\n\n\n\n\n\n\n\n\n\n\nBrun, P., N. E. Zimmermann, C. Hari, L. Pellissier, and D. N. Karger. 2022. “CHELSA-BIOCLIM+ A novel set of global climate-related predictors at kilometre-resolution.” https://doi.org/https://www.doi.org/10.16904/envidat.332.",
+    "text": "Code\nlibrary(terra)\nlibrary(sf)\n\n\nClimate data were obtained from the CHELSA-Bioclim v2.1 database at a spatial resolution of 1 km (Brun et al. 2022). We extracted mean annual temperature (BIO1, in °C) and mean annual precipitation (BIO12, in mm/year), both calculated as long-term averages over the 1981–2010 reference period.\n\n\nCode\nif (!require(Rchelsa)) {\n  remotes::install_git(\"https://gitlabext.wsl.ch/karger/rchelsa.git\")\n  library(Rchelsa)\n}\nclim &lt;- lapply(\n  c(\"bio01\", \"bio12\"),\n  function(rs) {\n    getChelsa(\n      rs,\n      extent = ext(c(110, 130, 0, 20)),\n      date = \"1981-2010\", dataset = \"chelsa-bioclim\"\n    )\n  }\n) |&gt;\n  rast()\nnames(clim) &lt;- c(\"mean_temperature\", \"mean_precipitation\")\n\nif (!dir.exists(\"data/chelsa\")) dir.create(\"data/chelsa\")\nwriteRaster(clim, file = \"data/chelsa/climate_variables.tif\", overwrite = TRUE)\n\n\n\n\nCode\n\"data/chelsa/climate_variables.tif\" |&gt;\n  rast() |&gt;\n  plot()\n\n\n\n\n\n\n\n\n\n\n\n\n\nBrun, P., N. E. Zimmermann, C. Hari, L. Pellissier, and D. N. Karger. 2022. “CHELSA-BIOCLIM+ A novel set of global climate-related predictors at kilometre-resolution.” https://doi.org/https://www.doi.org/10.16904/envidat.332.",
     "crumbs": [
       "Environmental variables",
       "Climate variables"
@@ -249,7 +337,7 @@
     "href": "31_tmf.html",
     "title": "Forest disturbance history",
     "section": "",
-    "text": "Maps\nWe used the Tropical Moist Forest product, developed by the European Commission’s Joint Research Centre. This product, based on Landsat images, classifies forest areas and detects annual changes (including deforestation and forest degradation) from 1990 to 2024 at a resolution of 30 metres.\nCode\nplot(c(\n  tmf[[which(grepl(2010, names(tmf)))]],\n  tmf[[which(grepl(2024, names(tmf)))]]\n), col = c(\"darkgreen\", \"orange\", \"red\", \"green\", \"lightblue\", \"grey\"))",
+    "text": "Maps\nWe used the Tropical Moist Forest product, developed by the European Commission’s Joint Research Centre. This product, based on Landsat images, classifies forest areas and detects annual changes (including deforestation and forest degradation) from 1990 to 2024 at a resolution of 30 metres.\nCode\ntmf_years &lt;- tmf[[which(grepl(\"2010|2015|2020\", names(tmf)))]]\nggplot() +\n  geom_spatraster(data = tmf_years) +\n  facet_wrap(~lyr) +\n  scale_fill_manual(values = c(\"darkgreen\", \"orange\", \"red\",\n                               \"green\", \"lightblue\", \"grey\")) +\n  labs(fill = NULL)",
     "crumbs": [
       "Socioeconomic variables",
       "Forest disturbance history"
@@ -260,7 +348,7 @@
     "href": "31_tmf.html#changes-in-forest-area-between-1990-and-2024",
     "title": "Forest disturbance history",
     "section": "Changes in forest area between 1990 and 2024",
-    "text": "Changes in forest area between 1990 and 2024\n\n\nCode\nggplot(data, aes(x = year)) +\n  geom_line(aes(y = Degraded, color = \"Degraded\"), size = 0.9) +\n  geom_line(aes(y = Deforested, color = \"Deforested\"), size = 0.9) +\n  geom_line(aes(y = Regrowth, color = \"Regrowth\"), size = 0.9) +\n  scale_color_manual(name = \"\", values = c(\n    \"Degraded\" = \"orange\",\n    \"Deforested\" = \"red\",\n    \"Regrowth\" = \"green\"\n  )) +\n  labs(title = \"TMF changes from 1990 to 2024\", x = \"Year\", y = \"Surface (Ha)\")",
+    "text": "Changes in forest area between 1990 and 2024\n\n\nCode\nggplot(data, aes(x = year)) +\n  geom_line(aes(y = Undisturbed, color = \"Undisturbed\"), size = 0.9) +\n  geom_line(aes(y = Degraded, color = \"Degraded\"), size = 0.9) +\n  geom_line(aes(y = Deforested, color = \"Deforested\"), size = 0.9) +\n  geom_line(aes(y = Regrowth, color = \"Regrowth\"), size = 0.9) +\n  scale_color_manual(name = \"\", values = c(\n    \"Undisturbed\" = \"forestgreen\",\n    \"Degraded\" = \"orange\",\n    \"Deforested\" = \"red\",\n    \"Regrowth\" = \"green\"\n  )) +\n  labs(title = \"TMF changes from 1990 to 2024\", x = \"Year\", y = \"Surface (Ha)\")",
     "crumbs": [
       "Socioeconomic variables",
       "Forest disturbance history"
@@ -271,7 +359,7 @@
     "href": "32_lulc.html",
     "title": "Philippines LULC data",
     "section": "",
-    "text": "Temporal trends\nCode\ndf_lulc &lt;- as.data.frame(lulc, xy = TRUE)\nnames(df_lulc) &lt;-\n  c(\"lon\", \"lat\", \"LC1988\", \"LC2003\", \"AGG14\", \"AGG12\", \"CLASS_NAME\")\ndf_lulc |&gt;\n  setDT() |&gt;\n  melt(id.vars = c(\"lon\", \"lat\")) |&gt;\n  ggplot(aes(lon, lat, fill = value)) +\n  geom_raster() +\n  scale_fill_manual(values = c(\"chartreuse4\", \"chartreuse2\", \"grey\", \"gold\")) +\n  facet_wrap(~variable) +\n  coord_equal() +\n  theme_classic() +\n  labs(x = NULL, y = NULL, fill = NULL) +\n  theme(legend.position = c(0.85, 0.2))\nCode\nfiles &lt;- list.files(\"data/LULC\", recursive = TRUE, \"shp\")\nyears &lt;- data.frame(\n  layer = seq_along(length(files)),\n  year = as.numeric(substr(files, 1, 4))\n)\nfreq(lulc) |&gt;\n  mutate(area = count * 0.09) |&gt;\n  left_join(years) |&gt;\n  ggplot(aes(year, area, col = value)) +\n  geom_line() +\n  scale_color_manual(values = c(\"chartreuse4\", \"chartreuse2\", \"grey\", \"gold\")) +\n  theme_classic() +\n  labs(x = \"Year\", y = \"Area [ha]\", col = NULL)",
+    "text": "Temporal trends\nCode\ndf_lulc &lt;- as.data.frame(lulc, xy = TRUE)\nnames(df_lulc) &lt;-\n  c(\"lon\", \"lat\", \"LC1988\", \"LC2003\", \"AGG14\", \"AGG12\", \"CLASS_NAME\")\ndf_lulc |&gt;\n  setDT() |&gt;\n  melt(id.vars = c(\"lon\", \"lat\")) |&gt;\n  ggplot(aes(lon, lat, fill = value)) +\n  geom_raster() +\n  scale_fill_manual(values = c(\"chartreuse4\", \"chartreuse2\", \"grey\", \"gold\")) +\n  facet_wrap(~variable) +\n  coord_equal() +\n  theme_classic() +\n  labs(x = NULL, y = NULL, fill = NULL) +\n  theme(legend.position = c(0.85, 0.2))\nCode\nfiles &lt;- list.files(\"data/LULC\", recursive = TRUE, \"shp\") |&gt;\n  grep(pattern = \"UMRBPL\", value=TRUE)\nyears &lt;- data.frame(\n  layer = seq(1, length(files)),\n  year = as.numeric(substr(files, 1, 4))\n)\nfreq(lulc) |&gt;\n  mutate(area = count * 0.09) |&gt;\n  left_join(years) |&gt;\n  ggplot(aes(year, area, col = value)) +\n  geom_line() +\n  scale_color_manual(values = c(\"chartreuse4\", \"chartreuse2\", \"grey\", \"gold\")) +\n  theme_classic() +\n  labs(x = \"Year\", y = \"Area [ha]\", col = NULL)",
     "crumbs": [
       "Socioeconomic variables",
       "Philippines LULC data"
@@ -291,12 +379,23 @@
   {
     "objectID": "33_roads.html",
     "href": "33_roads.html",
-    "title": "Distance to roads",
+    "title": "Distance to roads or waterways",
     "section": "",
-    "text": "Code\nlibrary(terra)\nlibrary(sf)\nlibrary(osmdata)\nlibrary(ggplot2)\n\n\nDistance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds.\n\n\nCode\n# get bounding box in the right format\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\numrbpl_bb &lt;- area |&gt;\n  ext() |&gt;\n  matrix(ncol = 2, byrow = TRUE)\nrownames(umrbpl_bb) &lt;- c(\"x\", \"y\")\ncolnames(umrbpl_bb) &lt;- c(\"min\", \"max\")\n\n# download road network from OSM\nroads_all &lt;- umrbpl_bb  |&gt;\n  opq()  |&gt;\n  add_osm_feature(key = \"highway\") |&gt;\n  osmdata_sf()\nroads_all$osm_lines &lt;- subset(roads_all$osm_lines, highway != \"residential\")\n\ntemplate_raster &lt;- rast(\"data/srtm/topo_variables.tif\")[[1]]\ndist_to_roads &lt;- distance(template_raster, roads$osm_lines)\nif (!dir.exists(\"data/osm\")) dir.create(\"data/osm\")\nwriteRaster(dist_to_roads, \"data/osm/dist_to_road.tif\")\n\n\n\n\nCode\n\"data/osm/dist_to_road.tif\" |&gt;\n  rast() |&gt;  plot()",
+    "text": "Roads\nDistance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds.\nCode\n# get bounding box in the right format\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\numrbpl_bb &lt;- area |&gt;\n  ext() |&gt;\n  matrix(ncol = 2, byrow = TRUE)\nrownames(umrbpl_bb) &lt;- c(\"x\", \"y\")\ncolnames(umrbpl_bb) &lt;- c(\"min\", \"max\")\n\n# download road network from OSM\nroads_all &lt;- umrbpl_bb |&gt;\n  opq() |&gt;\n  add_osm_feature(key = \"highway\") |&gt;\n  osmdata_sf()\nroads_all$osm_lines &lt;- subset(roads_all$osm_lines, highway != \"residential\")\n\ntemplate_raster &lt;- rast(\"data/srtm/topo_variables.tif\")[[1]]\ndist_to_roads &lt;- distance(template_raster, roads$osm_lines)\nif (!dir.exists(\"data/osm\")) dir.create(\"data/osm\")\nwriteRaster(dist_to_roads, \"data/osm/dist_to_road.tif\")\nCode\n\"data/osm/dist_to_road.tif\" |&gt;\n  rast() |&gt;\n  plot()",
     "crumbs": [
       "Socioeconomic variables",
-      "Distance to roads"
+      "Distance to roads or waterways"
+    ]
+  },
+  {
+    "objectID": "33_roads.html#waterways",
+    "href": "33_roads.html#waterways",
+    "title": "Distance to roads or waterways",
+    "section": "Waterways",
+    "text": "Waterways\nDistance to roads was calculated in meters using the OpenStreetMap dataset, including all road types such as footways and paths, and generated at a spatial resolution of 3 arc-seconds.\n\n\nCode\n# get bounding box in the right format\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\numrbpl_bb &lt;- area |&gt;\n  ext() |&gt;\n  matrix(ncol = 2, byrow = TRUE)\nrownames(umrbpl_bb) &lt;- c(\"x\", \"y\")\ncolnames(umrbpl_bb) &lt;- c(\"min\", \"max\")\n\n# download road network from OSM\nwater_all &lt;- umrbpl_bb |&gt;\n  opq() |&gt;\n  add_osm_feature(key = \"waterway\") |&gt;\n  osmdata_sf()\n\ntemplate_raster &lt;- rast(\"data/srtm/topo_variables.tif\")[[1]]\ndist_to_water &lt;- distance(template_raster, water_all$osm_lines)\nif (!dir.exists(\"data/osm\")) dir.create(\"data/osm\")\nwriteRaster(dist_to_water, \"data/osm/dist_to_water.tif\", overwrite = TRUE)\n\n\n\n\nCode\n\"data/osm/dist_to_water.tif\" |&gt;\n  rast() |&gt;\n  plot()",
+    "crumbs": [
+      "Socioeconomic variables",
+      "Distance to roads or waterways"
     ]
   },
   {
@@ -311,47 +410,36 @@
     ]
   },
   {
-    "objectID": "15_carbon_comparison.html#bams-plots",
-    "href": "15_carbon_comparison.html#bams-plots",
-    "title": "Comparing maps",
-    "section": "BAMS plots",
-    "text": "BAMS plots\n\n\nCode\n# BAMS plots\nbams &lt;- list.files(\"data/inventories/\", \"BAMS\", full.names = TRUE) |&gt;\n  read_docx() |&gt;\n  docx_extract_tbl(1) |&gt;\n  set_names(c(\n    \"plot\",\n    paste0(rep(c(\"agb\", \"agc\"), 2), rep(c(\"_h\", \"\"), each = 2)))) |&gt; \n  mutate(across(contains(\"ag\"), as.numeric))\nlocation_bams &lt;-\n  read_excel(\"data/inventories/Carbon Stock and Sequestration Data.xlsx\",\n             sheet = \"BAMS_Data\", range = \"A2:C38\"\n  ) |&gt;\n  rename_with(tolower) |&gt;\n  mutate(plot = as.character(rep(1:9, each = 4))) |&gt;\n  separate(coordinates, c(\"x\", \"y\")) |&gt;\n  mutate(across(c(\"x\", \"y\"), as.numeric)) |&gt;\n  group_by(plot) |&gt;\n  summarise(x = mean(x), y = mean(y))\ndf_bams &lt;- left_join(bams, location_bams) |&gt;\n  select(plot, x, y, agb_h) |&gt;\n  rename(agb = agb_h)\ndf_bams |&gt; \n  ggplot(aes(agb)) + \n  geom_histogram() + \n  labs(x = \"Aboveground biomass density (Mg/ha)\") +\n  theme_classic()",
+    "objectID": "41_potential_c.html",
+    "href": "41_potential_c.html",
+    "title": "Potential carbon stocks",
+    "section": "",
+    "text": "Prepare data\nGet AGB values by year in undisturbed forests.\nCode\narea &lt;- list.files(\"data/umrbpl/\", full.names = TRUE, pattern = \"shp$\") |&gt;\n  read_sf() |&gt;\n  st_transform(crs = \"EPSG:4326\")\nagb_maps &lt;- list.files(\n  \"data/biomass/\", \"umrbpl_ESACCI-BIOMASS-L4-AGB-MERGED\",\n  full.names = TRUE\n) |&gt;\n  rast() |&gt;\n  mask(area)\nyears &lt;- list.files(\"data/biomass/\", \"umrbpl_ESACCI-BIOMASS-L4-AGB-MERGED\") |&gt;\n  strsplit(\"-\") |&gt;\n  lapply(function(x) as.numeric(x[7])) |&gt;\n  unlist()\ntmf_maps &lt;- list.files(\"data/tmf/\", \"UMRBPL\", full.names = TRUE) |&gt;\n  grep(pattern = paste(years, collapse = \"|\"), value = TRUE) |&gt;\n  rast() |&gt;\n  # resample to agb resolution\n  resample(agb_maps, method = \"modal\") |&gt;\n  mask(area)\nnames(agb_maps) &lt;- years\nnames(tmf_maps) &lt;- gsub(\"Dec\", \"\", names(tmf_maps))\ncoords &lt;- data.frame(crds(agb_maps)[sample(nrow(crds(agb_maps)), 1e4), ])\n\ndata &lt;- lapply(list(agb_maps, tmf_maps), function(r) {\n  terra::extract(r, coords, ID = FALSE, xy = TRUE) |&gt;\n    pivot_longer(cols = as.character(years), names_to = \"year\") |&gt;\n    mutate(year = as.numeric(year))\n}) |&gt;\n  set_names(c(\"agb\", \"tmf\")) |&gt;\n  bind_rows(.id = \"data\") |&gt;\n  pivot_wider(\n    id_cols = c(\"x\", \"y\", \"year\"),\n    names_from = \"data\", values_from = \"value\"\n  )\nExplanatory variables\nCode\nset.seed(123)\ndata &lt;- c(\n  \"data/srtm/topo_variables.tif\",\n  \"data/chelsa/climate_variables.tif\",\n  \"data/wind/UMRBPL_wind-speed_10m.tif\",\n  \"data/osm/dist_to_road.tif\",\n  \"data/osm/dist_to_water.tif\"\n) |&gt;\n  lapply(function(r) {\n    r |&gt;\n      rast() |&gt;\n      mask(area) |&gt;\n      resample(agb_maps, method = \"mean\")\n  }) |&gt;\n  rast() |&gt;\n  terra::extract(data[, c(\"x\", \"y\")], ID = FALSE) |&gt;\n  rename(dist_to_road = elevation.1) |&gt;\n  rename(dist_to_water = elevation.2) |&gt;\n  bind_cols(data)",
     "crumbs": [
-      "Forest metrics",
-      "Comparing maps"
+      "Modelling AGB distribution",
+      "Potential carbon stocks"
     ]
   },
   {
-    "objectID": "15_carbon_comparison.html#fra-plots",
-    "href": "15_carbon_comparison.html#fra-plots",
-    "title": "Comparing maps",
-    "section": "FRA plots",
-    "text": "FRA plots\n\n\nCode\nfra &lt;- list.files(\"data/inventories/\", \"FRA\", full.names = TRUE) |&gt;\n  read_docx() |&gt;\n  docx_extract_tbl(1) |&gt;\n  set_names(c(\n    \"track\", \"plot\",\n    paste0(rep(c(\"agb\", \"agc\"), 2), rep(c(\"_h\", \"\"), each = 2)))) |&gt; \n  mutate(across(1:6, as.numeric)) |&gt; \n  filter(!is.na(plot)) |&gt; \n  fill(track, .direction = \"down\")\n## FRA plots\nsf_fra &lt;- st_read(\"data/inventories/Subplots_Tract105/Subplots_Tract105.shp\") |&gt;\n  mutate(dataset = \"fra\") |&gt; \n  mutate(plot = paste0(\"105_\", gsub(\"Plot \", \"\", PLOT)))\n\n\nReading layer `Subplots_Tract105' from data source \n  `D:\\github\\marikina_carbon\\data\\inventories\\Subplots_Tract105\\Subplots_Tract105.shp' \n  using driver `ESRI Shapefile'\nSimple feature collection with 4 features and 3 fields\nGeometry type: POLYGON\nDimension:     XY\nBounding box:  xmin: 311861.2 ymin: 1631644 xmax: 312383.6 ymax: 1632167\nProjected CRS: WGS 84 / UTM zone 51N\n\n\nCode\nfra |&gt; \n  ggplot(aes(agb_h)) + \n  geom_histogram() + \n  geom_vline(xintercept = median(fra$agb_h), lty=2) +\n  annotate(geom=\"text\", x = median(fra$agb_h) +50, y = 10, angle=90,\n           label=paste(\"Median:\", round(median(fra$agb_h)))) +\n  geom_vline(xintercept = mean(fra$agb_h), lty=2) +\n  annotate(geom=\"text\", x = mean(fra$agb_h) +50, y = 10, angle=90,\n           label=paste(\"Mean:\", round(mean(fra$agb_h)))) +\n  labs(x = \"Aboveground biomass density (Mg/ha)\") +\n  theme_classic()",
+    "objectID": "41_potential_c.html#random-forest",
+    "href": "41_potential_c.html#random-forest",
+    "title": "Potential carbon stocks",
+    "section": "Random forest",
+    "text": "Random forest\n\n\nCode\nrf_data &lt;- data |&gt;\n  filter(year == 2022) |&gt;\n  rename(wind = `PHL_wind-speed_10m`) |&gt;\n  select(\n    agb, elevation, slope, aspect, twi, mean_temperature,\n    mean_precipitation, wind, tmf, dist_to_road, dist_to_water\n  ) |&gt;\n  drop_na()\ntype &lt;- c(\"cal\", \"eval\")[1 + rbinom(nrow(rf_data), 1, 0.2)]\n\n\n\n\nCode\nrf_agb &lt;- randomForest(agb ~ .,\n  data = rf_data[type == \"cal\", ],\n  importance = TRUE\n)\nsave(rf_agb, file = \"models/rf_agb.rda\")\n\n\n\n\nCode\nload(\"models/rf_agb.rda\")\npredictions &lt;- predict(rf_agb, newdata = rf_data[type == \"eval\", ])\nerrors &lt;- rf_data$agb[type == \"eval\"] - predictions\nrmse &lt;- sqrt(mean(errors^2))\nprint(paste(\"RMSE:\", round(rmse), \"Mg/ha\"))\n\n\n[1] \"RMSE: 38 Mg/ha\"\n\n\nCode\nr_squared_oob &lt;- rf_agb$rsq[length(rf_agb$rsq)] * 100\nprint(paste(\n  \"Out-of-Bag R-squared (% Var Explained):\",\n  round(r_squared_oob), \"%\"\n))\n\n\n[1] \"Out-of-Bag R-squared (% Var Explained): 51 %\"\n\n\nCode\n# Calculate R-squared on the test set\nss_total &lt;- sum((rf_data$agb[type == \"eval\"] -\n                   mean(rf_data$agb[type == \"eval\"]))^2)\nss_residual &lt;- sum((rf_data$agb[type == \"eval\"] - predictions)^2)\nr_squared_test &lt;- 1 - (ss_residual / ss_total)\nprint(paste(\"Test Set R-squared:\", round(r_squared_test * 100), \"%\"))\n\n\n[1] \"Test Set R-squared: 61 %\"\n\n\n\n\nCode\nvarImpPlot(rf_agb)\n\n\n\n\n\n\n\n\n\nThe partial dependence plots are represented below.\n\n\nCode\ndata_all &lt;- data |&gt;\n  filter(year == 2022) |&gt;\n  rename(wind = `PHL_wind-speed_10m`) |&gt;\n  select(\n    agb, elevation, slope, aspect, twi, mean_temperature,\n    mean_precipitation, wind, tmf, dist_to_road, dist_to_water\n  ) |&gt; drop_na()\n\npreds &lt;- lapply(colnames(data_all)[-1], function(x) {\n  data.frame(\n    value = seq(\n      min(data_all[[x]]),\n      max(data_all[[x]]),\n      length.out = 50\n    )\n  )\n})\nnames(preds) &lt;- colnames(data_all)[-1]\npreds &lt;- bind_rows(preds, .id = \"var\")\n\npartial &lt;- function(model, data, variable, val, quants = c(0.1, 0.5, 0.9)) {\n  new_data &lt;- data\n  new_data[, variable] &lt;- val\n  predict(model, new_data) |&gt;\n    quantile(probs = quants)\n}\npreds |&gt; \n  group_by(var, value) |&gt; \n  summarise(quant = c(\"Q10\", \"Q50\", \"Q90\"), \n            pred = partial(rf_agb, select(data_all, -agb), var, value)) |&gt;\n  write.csv(\"models/rf_agb_partial.csv\", row.names = FALSE)\n\n\n\n\nCode\ndata_all &lt;- data[sample(5000),] |&gt;\n  filter(year == 2022) |&gt;\n  rename(wind = `PHL_wind-speed_10m`) |&gt;\n  select(\n    agb, elevation, slope, aspect, twi, mean_temperature,\n    mean_precipitation, wind, tmf, dist_to_road, dist_to_water\n  ) |&gt; drop_na() |&gt; \n  pivot_longer(!agb, names_to=\"var\")\nread.csv(\"models/rf_agb_partial.csv\") |&gt;\n  pivot_wider(names_from = \"quant\", values_from = \"pred\") |&gt;\n  ggplot(aes(value, Q50)) +\n  geom_ribbon(aes(ymin = Q10, ymax = Q90), alpha = 0.1) +\n  geom_point(data = data_all, aes(y = agb), alpha = 0.2) +\n  geom_line() +\n  facet_wrap(~var, scales = \"free\") +\n  theme_classic() +\n  theme(legend.position = \"none\") +\n  labs(x = \"Variable value\",\n       y = \"Distribution of predicted and observed SOC stocks\")\n\n\n\n\n\nPartial dependence plots showing the effect of individual variables on predicted SOC stocks. Solid lines represent the median predictions, while the grey areas represent the 10–90% quantiles. The points represent observations, with each colour representing a different site.",
     "crumbs": [
-      "Forest metrics",
-      "Comparing maps"
+      "Modelling AGB distribution",
+      "Potential carbon stocks"
     ]
   },
   {
-    "objectID": "15_carbon_comparison.html#location-of-the-plots",
-    "href": "15_carbon_comparison.html#location-of-the-plots",
-    "title": "Comparing maps",
-    "section": "Location of the plots",
-    "text": "Location of the plots\n\n\nCode\ndf_fra &lt;- fra |&gt; \n  mutate(dataset = \"fra\", plot = paste(track, plot, sep=\"_\")) |&gt; \n  select(dataset, plot, agb_h) |&gt; \n  rename(agb = agb_h)\ndf_all &lt;- df_ngp |&gt; \n  rename(plot = transect) |&gt; \n  mutate(dataset = \"ngp\")|&gt; \n  bind_rows(mutate(df_bams, dataset = \"bams\")) |&gt; \n  bind_rows(df_fra) |&gt; \n  select(-x, -y)\nlocation_ngp &lt;- df_ngp |&gt; \n  select(transect, x, y) |&gt; rename(plot=transect)\nsf_all &lt;-\n  bind_rows(list(ngp = location_ngp, bams = location_bams), .id = \"dataset\") |&gt;\n  st_as_sf(coords = c(\"x\", \"y\"), crs = 32651) |&gt; # check which CRS was used!!\n  bind_rows(sf_fra) |&gt;\n  st_transform(crs = \"EPSG:4326\")\nggplot() +\n  geom_sf(data = area) +\n  geom_sf(data = sf_all, aes(col = dataset))",
+    "objectID": "41_potential_c.html#spatial-cross-validation",
+    "href": "41_potential_c.html#spatial-cross-validation",
+    "title": "Potential carbon stocks",
+    "section": "Spatial cross validation",
+    "text": "Spatial cross validation",
     "crumbs": [
-      "Forest metrics",
-      "Comparing maps"
-    ]
-  },
-  {
-    "objectID": "15_carbon_comparison.html#cci-maps",
-    "href": "15_carbon_comparison.html#cci-maps",
-    "title": "Comparing maps",
-    "section": "CCI maps",
-    "text": "CCI maps\nWe match the year of the inventory to the closest year of the map.\n\n\nCode\ncci &lt;- list.files(\"data/biomass/\", \"AGB-MERGED\", full.names = TRUE) |&gt;\n  rast()\nnames(cci) &lt;- do.call(cbind, strsplit(names(cci), \"-\"))[7, ]\n\n# check inventory year\ndf_all$year &lt;- 2010\ndf_all$cci_carbon &lt;- sapply(seq_len(nrow(df_all)), function(i) {\n  closest &lt;- which.min(abs(as.numeric(names(cci)) - df_all$year[i]))\n  sf_all |&gt; \n    filter(dataset==df_all$dataset[i] & plot==df_all$plot[i]) |&gt; \n    robust_extract(cci[[closest]])\n})\ndiagnostic(df_all$agb, df_all$cci_carbon)\n\n\nRMSE: 107 Mg/ha\nMAPE: 158 %\nR²: 0.095 \nBias: 41 Mg/ha",
-    "crumbs": [
-      "Forest metrics",
-      "Comparing maps"
+      "Modelling AGB distribution",
+      "Potential carbon stocks"
     ]
   }
 ]

@@ -9,6 +9,8 @@ library(tidyverse)
 # Land tenure {.unnumbered}
 
 ```{r}
+#| message: false
+#| warning: false
 area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
@@ -16,16 +18,14 @@ tenure <- "data/tenure" |>
   list.files(recursive = TRUE, pattern = "shp$", full.names = TRUE) |>
   lapply(read_sf) |>
   bind_rows() |>
+  st_zm() |>
   mutate(
     type =
       ifelse(is.na(FolderPath),
         "SAPA",
-        unlist(lapply(strsplit(tenure$FolderPath, " "), first))
+        unlist(lapply(strsplit(FolderPath, " "), first))
       )
-  ) |>
-  group_by(type) |>
-  st_combine()
-
+  )
 
 ggplot() +
   geom_sf(data = area) +
@@ -37,16 +37,9 @@ ggplot() +
 
 tenure |>
   filter(st_geometry_type(tenure) == "LINESTRING") |>
-  st_cast() |>
-  ggplot() +
-  geom_sf(aes(fill = type))
-
-tenure |>
-  filter(st_geometry_type(tenure) == "LINESTRING") |>
   st_combine() |>
   st_union() |>
   st_cast() |>
   ggplot() +
   geom_sf()
 ```
-

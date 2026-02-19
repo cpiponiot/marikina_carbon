@@ -7,9 +7,7 @@ library(randomForest)
 library(tidyverse)
 ```
 
-
 # Potential carbon stocks {.unnumbered}
-
 
 ## Prepare data
 
@@ -59,6 +57,7 @@ Explanatory variables
 ```{r}
 #| message: false
 #| warning: false
+set.seed(123)
 data <- c(
   "data/srtm/topo_variables.tif",
   "data/chelsa/climate_variables.tif",
@@ -82,6 +81,8 @@ data <- c(
 ## Random forest
 
 ```{r}
+#| message: false
+#| warning: false
 rf_data <- data |>
   filter(year == 2022) |>
   rename(wind = `PHL_wind-speed_10m`) |>
@@ -91,14 +92,23 @@ rf_data <- data |>
   ) |>
   drop_na()
 type <- c("cal", "eval")[1 + rbinom(nrow(rf_data), 1, 0.2)]
+```
+
+```{r}
+#| message: false
+#| warning: false
+#| eval: false
 rf_agb <- randomForest(agb ~ .,
   data = rf_data[type == "cal", ],
   importance = TRUE
 )
+save(rf_agb, file = "models/rf_agb.rda")
 ```
 
-
 ```{r}
+#| message: false
+#| warning: false
+load("models/rf_agb.rda")
 predictions <- predict(rf_agb, newdata = rf_data[type == "eval", ])
 errors <- rf_data$agb[type == "eval"] - predictions
 rmse <- sqrt(mean(errors^2))
@@ -117,32 +127,82 @@ print(paste("Test Set R-squared:", round(r_squared_test * 100), "%"))
 ```
 
 ```{r}
+#| message: false
+#| warning: false
 varImpPlot(rf_agb)
 ```
 
+The partial dependence plots are represented below.
+
 ```{r}
-partialPlot(rf_agb,
-  x.var = "mean_precipitation",
-  pred.data = rf_data[type == "cal", ]
-)
-partialPlot(rf_agb, x.var = "aspect", pred.data = rf_data[type == "cal", ])
-partialPlot(rf_agb,
-  x.var = "mean_temperature",
-  pred.data = rf_data[type == "cal", ]
-)
-partialPlot(rf_agb, x.var = "elevation", pred.data = rf_data[type == "cal", ])
-partialPlot(rf_agb, x.var = "slope", pred.data = rf_data[type == "cal", ])
-partialPlot(rf_agb, x.var = "twi", pred.data = rf_data[type == "cal", ])
-partialPlot(rf_agb, x.var = "wind", pred.data = rf_data[type == "cal", ])
-partialPlot(rf_agb, x.var = "tmf", pred.data = rf_data[type == "cal", ])
-partialPlot(rf_agb,
-  x.var = "dist_to_road",
-  pred.data = rf_data[type == "cal", ]
-)
-partialPlot(rf_agb,
-  x.var = "dist_to_water",
-  pred.data = rf_data[type == "cal", ]
-)
+#| message: false
+#| warning: false
+#| eval: false
+data_all <- data |>
+  filter(year == 2022) |>
+  rename(wind = `PHL_wind-speed_10m`) |>
+  select(
+    agb, elevation, slope, aspect, twi, mean_temperature,
+    mean_precipitation, wind, tmf, dist_to_road, dist_to_water
+  ) |>
+  drop_na()
+
+preds <- lapply(colnames(data_all)[-1], function(x) {
+  data.frame(
+    value = seq(
+      min(data_all[[x]]),
+      max(data_all[[x]]),
+      length.out = 50
+    )
+  )
+})
+names(preds) <- colnames(data_all)[-1]
+preds <- bind_rows(preds, .id = "var")
+
+partial <- function(model, data, variable, val, quants = c(0.1, 0.5, 0.9)) {
+  new_data <- data
+  new_data[, variable] <- val
+  predict(model, new_data) |>
+    quantile(probs = quants)
+}
+preds |>
+  group_by(var, value) |>
+  summarise(
+    quant = c("Q10", "Q50", "Q90"),
+    pred = partial(rf_agb, select(data_all, -agb), var, value)
+  ) |>
+  write.csv("models/rf_agb_partial.csv", row.names = FALSE)
 ```
+
+```{r}
+#| message: false
+#| warning: false
+#| fig.height: 8
+#| fig.width: 8
+#| fig.cap: "Partial dependence plots showing the effect of individual variables on predicted SOC stocks. Solid lines represent the median predictions, while the grey areas represent the 10–90% quantiles. The points represent observations, with each colour representing a different site." #nolint
+data_all <- data[sample(5000), ] |>
+  filter(year == 2022) |>
+  rename(wind = `PHL_wind-speed_10m`) |>
+  select(
+    agb, elevation, slope, aspect, twi, mean_temperature,
+    mean_precipitation, wind, tmf, dist_to_road, dist_to_water
+  ) |>
+  drop_na() |>
+  pivot_longer(!agb, names_to = "var")
+read.csv("models/rf_agb_partial.csv") |>
+  pivot_wider(names_from = "quant", values_from = "pred") |>
+  ggplot(aes(value, Q50)) +
+  geom_ribbon(aes(ymin = Q10, ymax = Q90), alpha = 0.1) +
+  geom_point(data = data_all, aes(y = agb), alpha = 0.2) +
+  geom_line() +
+  facet_wrap(~var, scales = "free") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  labs(
+    x = "Variable value",
+    y = "Distribution of predicted and observed SOC stocks"
+  )
+```
+
 
 ## Spatial cross validation

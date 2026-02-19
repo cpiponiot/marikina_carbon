@@ -28,6 +28,7 @@ tmf2020 <- "data/tmf/JRC_TMF_AnnualChange_v1_2020_ASI_ID76_N20_E120.tif" |>
 #| warning: false
 names_class <- c("LC1988", "LC2003", "AGG14", "AGG12", "CLASS_NAME")
 lulc <- list.files("data/LULC", recursive = TRUE, "shp", full.names = TRUE) |>
+  grep(pattern = "UMRBPL", value = TRUE) |>
   lapply(vect) |>
   # project in longlat
   lapply(function(x) project(x, "epsg:4326")) |>
@@ -70,9 +71,10 @@ df_lulc |>
 ```{r}
 #| message: false
 #| warning: false
-files <- list.files("data/LULC", recursive = TRUE, "shp")
+files <- list.files("data/LULC", recursive = TRUE, "shp") |>
+  grep(pattern = "UMRBPL", value = TRUE)
 years <- data.frame(
-  layer = seq_along(length(files)),
+  layer = seq(1, length(files)),
   year = as.numeric(substr(files, 1, 4))
 )
 freq(lulc) |>

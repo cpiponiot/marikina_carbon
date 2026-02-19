@@ -36,7 +36,6 @@ pop <- paste0("data/ghsl/", file, ".tif") |>
 writeRaster(pop, file = "data/ghsl/population_umrbpl.tif")
 ```
 
-
 ```{r}
 #| message: false
 #| warning: false
@@ -45,4 +44,3 @@ ggplot() +
   geom_spatraster(data = pop) +
   scale_fill_viridis_c(trans = "log10")
 ```
-

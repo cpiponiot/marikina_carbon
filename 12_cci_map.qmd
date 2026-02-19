@@ -59,12 +59,14 @@ area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 agb <- list.files("data/biomass/", full.names = TRUE) |>
+  grep(pattern = "umrbpl", value = TRUE) |>
   grep(pattern = "AGB-", value = TRUE) |>
   rast() |>
   crop(ext(area)) |>
   mask(area) |>
   tidyterra::rename_with(~ sapply(strsplit(.x, "-"), function(i) i[7]))
 uncertainty <- list.files("data/biomass/", full.names = TRUE) |>
+  grep(pattern = "umrbpl", value = TRUE) |>
   grep(pattern = "AGB_SD", value = TRUE) |>
   rast() |>
   crop(ext(area)) |>

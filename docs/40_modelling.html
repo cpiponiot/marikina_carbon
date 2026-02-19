@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Environmental variables – Changes in forest cover and carbon density in the Upper Marikina RBPL</title>
+<title>Modelling AGB distribution – Changes in forest cover and carbon density in the Upper Marikina RBPL</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,27 +20,7 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-  margin-bottom: 0em;
-}
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -50,8 +30,8 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./21_topography.html" rel="next">
-<link href="./15_carbon_comparison.html" rel="prev">
+<link href="./41_potential_c.html" rel="next">
+<link href="./34_population.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -102,7 +82,7 @@ div.csl-indent {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./20_environment.html">Environmental variables</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./40_modelling.html">Modelling AGB distribution</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -176,7 +156,7 @@ div.csl-indent {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="./20_environment.html" class="sidebar-item-text sidebar-link active">
+            <a href="./20_environment.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Environmental variables</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -234,7 +214,7 @@ div.csl-indent {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="./40_modelling.html" class="sidebar-item-text sidebar-link">
+            <a href="./40_modelling.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Modelling AGB distribution</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -262,7 +242,7 @@ div.csl-indent {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Environmental variables</h1>
+<h1 class="title">Modelling AGB distribution</h1>
 </div>
 
 
@@ -279,17 +259,8 @@ div.csl-indent {
 </header>
 
 
-<p>Forest aboveground carbon stocks have been proven to be linked to environmental variables such as climate and soil characteristics <span class="citation" data-cites="Muller-Landau2020">(<a href="#ref-Muller-Landau2020" role="doc-biblioref">Muller-Landau et al. 2020</a>)</span>. Topography can impact soil properties and water availability and also plays a role in the distribution of carbon stocks <span class="citation" data-cites="Muscarella2020">(<a href="#ref-Muscarella2020" role="doc-biblioref">Muscarella et al. 2020</a>)</span>. Due to the variation of soil characteristics at fine spatial scales and the lack of local soil data, we do not expect global soil databases to provide much information about local soil characteristics. For this reason, we focus only on climate and topographic variables as predictors of aboveground carbon stocks.</p>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
-<div id="ref-Muller-Landau2020" class="csl-entry" role="listitem">
-Muller-Landau, Helene C., K. C. Cushman, Eva E. Arroyo, Isabel Martinez Cano, Kristina J. Anderson-Teixeira, Bogumila Backiel, Authors Helene C Muller-landau, et al. 2020. <span>“<span class="nocase">Patterns and mechanisms of spatial variation in tropical forest productivity, woody residence time, and biomass</span>.”</span> <em>New Physiologist</em>.
-</div>
-<div id="ref-Muscarella2020" class="csl-entry" role="listitem">
-Muscarella, Robert, Samira Kolyaie, Douglas C. Morton, Jess K. Zimmerman, and María Uriarte. 2020. <span>“<span class="nocase">Effects of topography on tropical forest structure depend on climate context</span>.”</span> Edited by Tommaso Jucker. <em>Journal of Ecology</em> 108 (1): 145–59. <a href="https://doi.org/10.1111/1365-2745.13261">https://doi.org/10.1111/1365-2745.13261</a>.
-</div>
-</div>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -693,13 +664,13 @@ Muscarella, Robert, Samira Kolyaie, Douglas C. Morton, Jess K. Zimmerman, and Ma
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./15_carbon_comparison.html" class="pagination-link" aria-label="Comparing maps">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Comparing maps</span>
+      <a href="./34_population.html" class="pagination-link" aria-label="Population density">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Population density</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./21_topography.html" class="pagination-link" aria-label="Topographic variables">
-        <span class="nav-page-text">Topographic variables</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./41_potential_c.html" class="pagination-link" aria-label="Potential carbon stocks">
+        <span class="nav-page-text">Potential carbon stocks</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
