@@ -18,7 +18,7 @@ Distance to roads was calculated in meters using the OpenStreetMap dataset, incl
 #| warning: false
 #| eval: false
 # get bounding box in the right format
-area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+area <- list.files("data/boundary/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 umrbpl_bb <- area |>
@@ -59,7 +59,7 @@ Distance to roads was calculated in meters using the OpenStreetMap dataset, incl
 #| warning: false
 #| eval: false
 # get bounding box in the right format
-area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+area <- list.files("data/boundary/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 umrbpl_bb <- area |>

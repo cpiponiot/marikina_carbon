@@ -13,7 +13,7 @@ library(readxl)
 ```{r}
 #| message: false
 #| warning: false
-area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+area <- list.files("data/boundary/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 ```
@@ -41,7 +41,7 @@ ngp <- list.files("data/inventories/", "NGP", full.names = TRUE) |>
 
 location_ngp <-
   read_excel("data/inventories/Carbon Stock and Sequestration Data.xlsx",
-    sheet = "NGP_Carbon Assessment", range = "B3:E84"
+             sheet = "NGP_Carbon Assessment", range = "B3:E84"
   ) |>
   set_names(c("plot", "x", "y", "elev")) |>
   mutate(transect = rep(1:27, each = 3)) |>
@@ -86,7 +86,7 @@ bams <- list.files("data/inventories/", "BAMS", full.names = TRUE) |>
   mutate(across(contains("ag"), as.numeric))
 location_bams <-
   read_excel("data/inventories/Carbon Stock and Sequestration Data.xlsx",
-    sheet = "BAMS_Data", range = "A2:C38"
+             sheet = "BAMS_Data", range = "A2:C38"
   ) |>
   rename_with(tolower) |>
   mutate(plot = as.character(rep(1:9, each = 4))) |>
@@ -143,7 +143,20 @@ fra |>
   theme_classic()
 ```
 
-## NFI plots 
+We also added one FRA plot in the Rizal province but outside UMRBPL that was located in a closed forest. 
+
+```{r}
+#| message: false
+#| warning: false
+fra_rizal <- read.csv("data/inventories/nfi_2025_rizal_forest.csv") |> 
+  mutate(plot = paste(f1_tract_no, f2_plot_code, sep = "_"), 
+         year = 2025, x = f2_plot_center_info_x, y = f2_plot_center_info_y) |> 
+  select(plot, agb, x, y, year) |> 
+  mutate(dataset="fra")
+```
+
+
+## NFI plots
 
 ```{r}
 #| message: false
@@ -239,7 +252,7 @@ clim$cluster <-
     3, 25
   )$cluster
 # convex hull of upper marikina climate
-area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+area <- list.files("data/boundary/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 umrbpl <- rast("data/chelsa/climate_variables.tif") |>
@@ -261,7 +274,6 @@ mutate(clim, inside = inside > 0) |>
   write.csv(file = "data/inventories/nfi_clim.csv", row.names = FALSE)
 ```
 
-
 ```{r}
 #| message: false
 #| warning: false
@@ -281,7 +293,8 @@ df_fra <- fra |>
   mutate(dataset = "fra", plot = paste(track, plot, sep = "_")) |>
   select(dataset, plot, agb_h) |>
   rename(agb = agb_h) |>
-  subset(grepl("105", plot))
+  subset(grepl("105", plot)) |> 
+  bind_rows(select(fra_rizal, dataset, plot, agb))
 df_all <- df_ngp |>
   rename(plot = transect) |>
   mutate(dataset = "ngp") |>
@@ -294,10 +307,12 @@ location_ngp <- df_ngp |>
   rename(plot = transect)
 sf_all <-
   bind_rows(list(ngp = location_ngp, bams = location_bams), .id = "dataset") |>
-  st_as_sf(coords = c("x", "y"), crs = 32651) |> # check which CRS was used!!
+  st_as_sf(coords = c("x", "y"), crs = 32651) |> 
   bind_rows(sf_fra) |>
   st_transform(crs = "EPSG:4326") |>
-  bind_rows(st_as_sf(location_nfi, coords = c("x", "y"), crs = 4326))
+  bind_rows(st_as_sf(location_nfi, coords = c("x", "y"), crs = 4326)) |>
+  bind_rows(st_as_sf(select(fra_rizal, dataset, plot, x, y),
+            coords = c("x", "y"), crs = 4326))
 # within UM
 g1 <- ggplot() +
   geom_sf(data = area) +
@@ -350,7 +365,6 @@ df_all <- df_all |>
   filter(dataset != "nfi")
 ```
 
-
 ```{r}
 #| message: false
 #| warning: false
@@ -390,7 +404,9 @@ cci <- list.files("data/biomass/", "N20E120_ESACCI", full.names = TRUE) |>
 names(cci) <- do.call(cbind, strsplit(names(cci), "-"))[7, ]
 
 # check inventory year
-df_all <- mutate(df_all, year = as.numeric(ifelse(is.na(year), 2010, year)))
+df_all <- df_all |> 
+  mutate(year = as.numeric(ifelse(is.na(year), 2010, year))) |> 
+  mutate(year = ifelse(plot=="1101_N", 2025, year))
 df_all$cci_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
   closest <- which.min(abs(as.numeric(names(cci)) - df_all$year[i]))
   sf_all |>
@@ -444,7 +460,7 @@ df_all$gedi_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
 diagnostic(df_all$gedi_carbon, df_all$agb)
 ```
 
-## Araza map 
+## Araza map
 
 ```{r}
 #| message: false
@@ -459,6 +475,18 @@ df_all$ph_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
 diagnostic(df_all$ph_carbon, df_all$agb)
 ```
 
+## Carbon diligence
+
+```{r}
+fcd <- "data/fcd/UMRBPL_ACD/UMRBPL_ACD_2013.tif" |> rast()
+df_all$fcd_carbon <- sapply(seq_len(nrow(df_all)), function(i) {
+  sf_all |>
+    filter(dataset == df_all$dataset[i] & plot == df_all$plot[i]) |>
+    robust_extract(fcd)
+})/0.47
+diagnostic(df_all$fcd_carbon, df_all$agb)
+```
+
 ## Map choice
 
 ```{r}
@@ -470,7 +498,7 @@ diagnostic(df_all$ph_carbon, df_all$agb)
 map_labs <- c(
   "cci" = "CCI Biomass", "gfw" = "GFW",
   "glob" = "GlobBiomass", "ph" = "Araza",
-  "gedi" = "GEDI L4B"
+  "gedi" = "GEDI L4B", "fcd" = "FCD"
 )
 df_all |>
   pivot_longer(cols = contains("_carbon")) |>
@@ -486,7 +514,7 @@ df_all |>
   geom_abline(slope = 1, intercept = 0, lty = 2) +
   coord_equal() +
   theme_bw() +
-  theme(legend.position = "inside", legend.position.inside = c(0.8, 0.25))
+  theme(legend.position = "right")
 ```
 
 ```{r}
@@ -502,7 +530,7 @@ df_all |>
     bias = signif(mean(value - agb, na.rm = TRUE), 3)
   ) |>
   write.csv("C:/Users/piponiot-laroche/Downloads/metrics.csv",
-    row.names = FALSE
+            row.names = FALSE
   )
 ```
 
@@ -530,11 +558,15 @@ arnan <- rast("data/biomass/agb_ph_2015_rf_tc10masked.tif")[[1]] |>
 gedi <- rast("data/biomass/GEDI04_B_philippines.tif")[[2]] |>
   crop(namria_closed) |>
   mask(namria_closed)
+fcd <- rast("data/fcd/UMRBPL_ACD/UMRBPL_ACD_2013.tif") |>
+  crop(namria_closed) |>
+  mask(namria_closed)
+fcd <- fcd / 0.47
 coords <- data.frame(
   lon = runif(1e4, ext(namria_closed)[1], ext(namria_closed)[2]),
   lat = runif(1e4, ext(namria_closed)[3], ext(namria_closed)[4])
 )
-list("cci", "gfw", "arnan", "gedi") |>
+list("cci", "gfw", "arnan", "gedi", "fcd") |>
   lapply(function(nmrast) {
     terra::extract(get(nmrast), coords, xy = TRUE)[, 2:4] |>
       set_names("agb", "x", "y") |>
@@ -551,6 +583,5 @@ list("cci", "gfw", "arnan", "gedi") |>
   ) +
   theme_classic()
 ```
-
 
 The final map chosen is ...

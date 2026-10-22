@@ -11,7 +11,7 @@ library(tidyverse)
 ```{r}
 #| message: false
 #| warning: false
-area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+area <- list.files("data/boundary/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 tenure <- "data/tenure" |>

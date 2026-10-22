@@ -55,7 +55,7 @@ for (year in c(2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)) {
 ```{r}
 #| message: false
 #| warning: false
-area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+area <- list.files("data/boundary/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 agb <- list.files("data/biomass/", full.names = TRUE) |>

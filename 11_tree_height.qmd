@@ -18,7 +18,7 @@ Tree height was estimated by combining Sentinel-2 optical satellite images and G
 #| message: false
 #| warning: false
 dir_height <- "data/tree_height"
-area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+area <- list.files("data/boundary/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 if (!dir.exists(dir_height)) dir.create(dir_height)

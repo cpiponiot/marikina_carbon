@@ -26,7 +26,8 @@ book:
         - 34_population.qmd
     - part: 40_modelling.qmd
       chapters:
-        - 41_potential_c.qmd
+        - 41_c_drivers.qmd
+        - 42_c_scenarios.qmd
 
 bibliography: references.bib
 

@@ -19,7 +19,7 @@ api_key <- NULL # change to API key
 if (!is.null(api_key)) set_opentopo_key(api_key)
 
 # UMRBPL boundaries
-area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+area <- list.files("data/boundary/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 

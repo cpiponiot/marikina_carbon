@@ -51,7 +51,7 @@ data <- data.frame(
   Water = -1,
   Other = -1
 )
-area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+area <- list.files("data/boundary/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 tmf <- tmf_files |>

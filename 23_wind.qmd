@@ -13,7 +13,7 @@ library(sf)
 #| eval: false
 "https://globalwindatlas.info/api/gis/country/PHL/wind-speed/10" |>
   download.file(destfile = "data/wind/PHL_wind-speed_10m.tif", method = "curl")
-area <- list.files("data/umrbpl/", full.names = TRUE, pattern = "shp$") |>
+area <- list.files("data/boundary/", full.names = TRUE, pattern = "shp$") |>
   read_sf() |>
   st_transform(crs = "EPSG:4326")
 "data/wind/PHL_wind-speed_10m.tif" |>
