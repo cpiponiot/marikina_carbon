@@ -1,0 +1,65 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(terra)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(ggalluvial)
+```
+
+# Land use change and effect on carbon stocks {.unnumbered}
+
+## Desired scenario
+
+### Land use and land cover changes 
+
+From participatory workshop -> transition area of each land cover was decided with participants 
+
+```{r}
+rast(c("projections/data/lulc_maps/namria_2025.tif", 
+     "projections/data/lulc_maps/desired.tif")) |> 
+  setNames(c("namria", "desired")) |>
+  as.data.frame(na.rm = TRUE) |>
+  count(namria, desired, name = "freq") |>
+  mutate(area = freq*30^2*1e-4) |>
+  ggplot(aes(y = area, axis1 = namria, axis2 = desired)) +
+  geom_alluvium(aes(fill = namria), width = 1/12) +
+  geom_stratum(width = 1/12, fill = "grey80", color = "black") +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
+  scale_x_discrete(limits = c("LULC 2025", "Desired scenario 2056"), expand = c(0.15, 0.05)) +
+  labs(
+    title = "Alluvial Transition Between current and desired LULC",
+    y = "Area (ha)",
+    fill = "NAMRIA Class"
+  ) +
+  theme_minimal()
+```
+
+-> spatial distribution of land cover was then obtained with TerrSet by using nearest edge model
+
+```{r}
+rast(c("projections/data/lulc_maps/namria_2025.tif", 
+     "projections/data/lulc_maps/desired.tif")) |> 
+  setNames(c("NAMRIA 2025", "Desired scenario for 2056")) |>
+  panel(col = RColorBrewer::brewer.pal(10, name = "Paired"))
+```
+
+Effect on TMF variables 
+- % forests (closed: 100% / open: xx % / )
+
+- time since last disturbance: closed 35+ yr
+
+
+### Additional hypotheses
+
+- no change in road network
+
+- climate scenario: SSP2-4.5 (could also test SSP5-8.5) / wind? -> maps
+
+- no change in topographic variables
+
+
+## Business as usual scenario
+
+# Carbon trajectories

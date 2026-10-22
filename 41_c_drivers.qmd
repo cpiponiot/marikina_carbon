@@ -1,0 +1,219 @@
+```{r setup}
+#| message: false
+#| warning: false
+library(terra)
+library(sf)
+library(ranger)
+library(tidyverse)
+library(patchwork)
+p     <- function(...) file.path("data", ...)
+epsg  <- 32651          # WGS 84 / UTM 51N
+res   <- 500            # target resolution (m)
+yr <- 2022
+block <- 5000           # spatial CV block size (m)
+set.seed(123)
+```
+
+# Mapping carbon stocks and their drivers {.unnumbered}
+
+## Gather all drivers and harmonize their resolutions
+
+```{r}
+bnd  <- st_read(p("boundary", "UMRBPL_Boundary.shp"), quiet = TRUE) |>
+  st_make_valid() |> st_transform(epsg) |> st_union() |> vect()
+e    <- ext(bnd)
+tmpl <- rast(xmin = floor(xmin(e) / res) * res, xmax = ceiling(xmax(e) / res) * res,
+             ymin = floor(ymin(e) / res) * res, ymax = ceiling(ymax(e) / res) * res,
+             resolution = res, crs = paste0("epsg:", epsg))
+tmpl <- mask(setValues(tmpl, 1), bnd)                 # 1 inside UMRBPL, NA outside
+
+# Read a raster, crop to the study area (in its own CRS), optionally pre-process,
+# then resample to the template. "average" for finer data, "bilinear" for coarse/smooth.
+load_to_grid <- function(file, band = 1, method = "average", pre = NULL) {
+  if (grepl("\\.tif", file)) {
+    r <- rast(file)[[band]]
+  } else if (grepl("\\.shp", file))
+    r <- vect(file) |> rasterize(tmpl, field = band)
+  r <- crop(r, project(bnd, crs(r)), snap = "out")
+  if (!is.null(pre)) r <- pre(r)
+  mask(project(r, tmpl, method = method), tmpl)
+}
+```
+
+Carbon map from CCI-Biomass project.
+
+```{r}
+agb_file <- list.files(p("biomass"), full.names = TRUE,
+                       pattern = "umrbpl_ESACCI")
+agb_file <- agb_file[grepl("AGB-MERGED-100m", agb_file) & grepl(yr, agb_file)]
+stopifnot(length(agb_file) == 1)
+agc <- load_to_grid(agb_file) * 0.47  # 0.47: biomass to carbon conversion ratio
+names(agc) <- "agc"
+plot(agc)
+```
+
+Landscape predictors:
+
+```{r}
+topo <- p("topography", "topo_variables.tif")   # bands: elevation, slope, aspect, TWI
+clim <- p("chelsa", "climate_variables.tif")   # bands: temperature, precipitation
+tmf_file <- list.files(p("tmf"), pattern = paste0(yr, ".*\\.tif$"), full.names = TRUE)[1]
+
+pred2022 <- c(
+  # load_to_grid(topo, 1) |> setNames("elevation"),
+  load_to_grid(topo, 2) |> setNames("slope"),
+  load_to_grid(topo, 4) |> setNames("twi"),
+  load_to_grid(clim, 1, "bilinear") |> setNames("temperature"),
+  load_to_grid(clim, 2, "bilinear") |> setNames("precipitation"),
+  load_to_grid(p("wind", "UMRBPL_wind-speed_10m.tif")) |> setNames("wind"), # use terraclimate
+  # load_to_grid(p("access", "dist_to_road.tif")) |> setNames("dist_road"),
+  # load_to_grid(p("access", "dist_to_water.tif")) |> setNames("dist_water"),
+  # population: persons per pixel -> persons per km2 BEFORE resampling
+  # load_to_grid(p("population", "PHL_ppp_v2b_2015_UNadj.tif"),
+  # pre = function(r) r / cellSize(r, unit = "km")) |> setNames("pop_density"),
+  # NAMRIA landuse map 
+  load_to_grid(p("lulc_maps", "namria_2025.tif"), method = "mode") |> setNames("lulc_class"),
+  load_to_grid(p("tmf_disturbance", "TMF_years_since_disturbance_native_2024.tif"),
+               method = "bilinear") |> setNames("years_since_dist"),
+  # JRC TMF 2022 classes -> proportion of each cell (1 undisturbed, 2 degraded, 3 deforested, 4 regrowth)
+  # load_to_grid(tmf_file, method = "mode") |> setNames("tmf_class")
+  # load_to_grid(tmf_file, pre = function(r) ifel(r == 1, 1, 0)) |> setNames("tmf_undisturbed"),
+  load_to_grid(tmf_file, pre = function(r) ifel(r %in% c(1, 2, 4), 1, 0)) |> setNames("tmf_forest")
+)
+stack_all <- c(agc, pred2022)
+plot(stack_all)
+```
+
+```{r}
+fit_rf <- function(d, ...) ranger(agc ~ ., data = d[, c("agc", vars)], num.trees = 1000,
+                                  mtry = max(1, floor(length(vars) / 3)), min.node.size = 5,
+                                  seed = 123, ...)
+```
+
+```{r}
+# training table
+df <- as.data.frame(stack_all, xy = TRUE, cells = TRUE, na.rm = TRUE)
+cat("Training cells:", nrow(df), "\n")
+vars <- names(pred2022)
+```
+
+## Fit random forest with spatial block CV (5-km blocks, 5 folds)
+
+```{r}
+blk <- paste(floor(df$x / block), floor(df$y / block))
+ub  <- unique(blk)
+fold_of_block <- setNames(sample(rep(1:5, length.out = length(ub))), ub)
+df$fold <- fold_of_block[blk]
+
+# map of spatial CV blocks
+blocks <- unique(data.frame(bx = floor(df$x / block), by = floor(df$y / block),
+                            fold = df$fold))
+blocks$xmin <- blocks$bx * block;  blocks$xmax <- blocks$xmin + block
+blocks$ymin <- blocks$by * block;  blocks$ymax <- blocks$ymin + block
+ggplot() +
+  geom_tile(data = df, aes(x, y, fill = factor(fold)), width = res, height = res) +
+  geom_rect(data = blocks, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+            fill = NA, colour = "grey20", linewidth = 0.3) +
+  geom_sf(data = st_as_sf(bnd), fill = NA, colour = "black", linewidth = 0.6) +
+  scale_fill_brewer(palette = "Set2", name = "CV fold") +
+  coord_sf(crs = epsg, datum = NA, expand = FALSE) +
+  labs(x = NULL, y = NULL) +
+  theme_minimal(base_size = 10) +
+  theme(legend.position = "bottom")
+```
+
+```{r}
+df$cv_pred <- NA_real_
+for (f in 1:5) {
+  m <- fit_rf(df[df$fold != f, ])
+  df$cv_pred[df$fold == f] <- predict(m, df[df$fold == f, vars])$predictions
+}
+rmse <- sqrt(mean((df$agc - df$cv_pred)^2))
+r2   <- 1 - sum((df$agc - df$cv_pred)^2) / sum((df$agc - mean(df$agc))^2)
+cat(sprintf("Spatial-CV  RMSE = %.2f Mg C/ha | R2 = %.3f\n", rmse, r2))
+```
+
+## Final model and predictions
+
+```{r}
+rf <- fit_rf(df, importance = "permutation")
+```
+
+Variable importance:
+
+```{r}
+print(sort(rf$variable.importance, decreasing = TRUE))
+```
+
+Partial dependence plots (by order of importance):
+
+```{r}
+#| fig.height: 8
+#| fig.width: 8
+pdp_one <- function(model, data, var, n_grid = 30) {
+  if (class(data[[var]]) == "numeric") {
+    g <- unique(quantile(data[[var]], seq(0.05, 0.95, length.out = n_grid), na.rm = TRUE))
+  } else if (class(data[[var]]) == "factor") {
+    g <- levels(data[[var]])
+  }
+  y <- vapply(g, function(v) {
+    d <- data; d[[var]] <- v                       # hold all other predictors at observed values
+    mean(predict(model, d)$predictions)
+  }, numeric(1))
+  data.frame(variable = var, value = g, predicted_AGC = y)
+}
+top_vars <- names(sort(rf$variable.importance, decreasing = TRUE))[1:min(9, length(vars))]
+if (!file.exists("models/partial_dependence_values.csv")) {
+  pdp <- do.call(rbind, lapply(top_vars, pdp_one, model = rf, data = df[, vars]))
+  pdp$variable <- factor(pdp$variable, levels = top_vars)    # ordered by importance
+  write.csv(pdp, "models/partial_dependence_values.csv", row.names = FALSE)
+} else pdp <- read.csv("models/partial_dependence_values.csv")
+# Define variable types
+cat_vars <- intersect(top_vars, c("tmf_class", "lulc_class"))
+num_vars <- setdiff(top_vars, c("tmf_class", "lulc_class"))
+# Generate categorical plots
+cat_plots <- lapply(cat_vars, function(v) {
+  pdp |> filter(variable == v) |> 
+    ggplot(aes(value, predicted_AGC)) +
+    geom_point() +
+    labs(x = NULL, y = "Predicted AGC (Mg C ha\u207b\u00b9)", title = v) +
+    theme_classic(base_size = 10) + 
+    theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
+}) |> setNames(cat_vars)
+# Generate numeric plots
+num_plots <- lapply(num_vars, function(v) {
+  pdp |> filter(variable == v) |> 
+    mutate(value = as.numeric(value)) |>
+    ggplot(aes(value, predicted_AGC)) +
+    geom_line(linewidth = 0.9) +
+    geom_rug(data = mutate(rename(df[, c("agc", v)], value = v), variable = v),
+             aes(x = value), inherit.aes = FALSE, alpha = 0.15, sides = "b") +
+    labs(x = NULL, y = "Predicted AGC (Mg C ha\u207b\u00b9)", title = v) +
+    theme_classic(base_size = 10)
+}) |> setNames(num_vars)
+# Combine all panels automatically
+order_vars <- sapply(names(sort(rf$variable.importance, decreasing = TRUE)), function(x) which(c(cat_vars, num_vars) == x)) |> unlist()
+wrap_plots(c(cat_plots, num_plots)[order_vars], ncol = 3)
+```
+
+Wall-to-wall predictions of AGB:
+
+```{r}
+newdat <- as.data.frame(pred2022, cells = TRUE, na.rm = TRUE)
+agc_pred <- setValues(rast(tmpl), NA_real_)
+agc_pred[newdat$cell] <- predict(rf, newdat[, vars])$predictions
+names(agc_pred) <- "predicted_AGC_MgC_ha"
+panel(c(agc, agc_pred), main = c("Observed AGC 2022", "RF-predicted AGC"))
+```
+
+```{r}
+as.data.frame(c(agc, agc_pred), na.rm = TRUE) |> 
+  ggplot(aes(agc, predicted_AGC_MgC_ha)) + 
+  geom_abline(slope = 1, intercept = 0, lty = 2) +
+  geom_point() + 
+  labs(x = "CCI-BIOMASS derived AGC (Mg/ha)", y = "Predicted AGC (Mg/ha)")
+```
+
+```{r}
+saveRDS(rf, file.path("models", "rf_agc_model.rds"))
+```
